@@ -1,2 +1,2 @@
-# cassandra-tranning
-A Cassandra training
+# cassandra-Training
+A Cassandra Training
