@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-   <modelVersion>4.0.0</modelVersion>
+ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+ <modelVersion>4.0.0</modelVersion>
 
-   <parent>
+ <parent>
     <groupId>com.nosqlxp</groupId>
     <artifactId>cassandra-tranning-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -13,7 +13,6 @@
 
 <name>${project.groupId}:${project.artifactId}</name>
 <description>Apostila</description>
-<url>http://jnosql.org/</url>
 
 
 
@@ -90,11 +89,11 @@
                 <sourceHighlighter>coderay</sourceHighlighter>
                 <embedAssets>true</embedAssets>
                 <attributes>
-                    <license>Apache License v2.0</license>
+                    <license>GNU General Public License v3.0</license>
                     <revnumber>${project.version}</revnumber>
                     <revremark>${revremark}</revremark>
                     <revdate>${revisiondate}</revdate>
-                    <doctitle>Eclipse JNoSQL</doctitle>
+                    <doctitle>Apostila Cassandra</doctitle>
                 </attributes>
             </configuration>
         </plugin>
