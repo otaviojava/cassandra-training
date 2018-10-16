@@ -1,0 +1,8 @@
+SPDXVersion: SPDX-2.1
+PackageName: Eclipse JNoSQL
+PackageHomePage: http://www.jnosql.org/
+PackageLicenseDeclared: Apache-2.0
+
+PackageCopyrightText: <text>
+Otávio Santana otaviojava@apache.org
+</text>
