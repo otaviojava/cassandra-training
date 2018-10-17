@@ -1,4 +1,4 @@
-== Introdução
+== Introdução (O que é NoSQL, conceitos básicos)
 
 Os bancos de dados NoSQL realizam operação de inserção e recuperação de dados utilizando outro modelo que não seja o relacional. Esses bancos tem como principais características velocidade e alta taxa de escalabilidade, eles estão sendo adotados com maior frequência em diversos tipos de aplicações, inclusive, aplicações para as instituições financeiras. Como consequência, cresce também o número de fornecedores para esse tipo de banco de dados.
 
@@ -22,7 +22,7 @@ Possui uma estrutura muito semelhante à do java.util.Map, onde podemos armazena
 .Relação entre chave valor e banco de dados relacional
 |===
 | Estrutura relacional | Estrutura chave-valor
-| :--- | :---
+| --- | ---
 | Table | Bucket
 | Row | Key/value pair
 | Column | ----
@@ -46,7 +46,7 @@ Este modelo permite armazenar qualquer documento, sem ter a necessidade de defin
 .Relação entre documentos e banco de dados relacional
 |===
 | Estrutura relacional | Estrutura de documentos
-| :--- | :---
+| --- | ---
 | Table | Collection
 | Row | Document
 | Column | Key/value pair
@@ -72,7 +72,7 @@ Esse modelo se tornou popular através do paper BigTable do Google, com o objeti
 .Relação entre Família de colunas e banco de dados relacional
 |===
 | Estrutura relacional | Estrutura de família de colunas
-| :--- | :---
+| --- | ---
 | Table | Column Family
 | Row | Column
 | Column | Key/value pair
@@ -96,7 +96,7 @@ image::graph.png[Graph structure]
 .Relação entre Grafos e banco de dados relacional
 |===
 | Estrutura relacional | Estrutura de grafos
-| :--- | :---
+| --- | ---
 | Table | Vertex and Edge
 | Row | Vertex
 | Column | Vertex and Edge property
@@ -112,7 +112,58 @@ Alguns bancos de dados possuem a comum característica de ter suporte de um ou m
 * OrientDB
 * Couchbase
 
-=== Comparando com as aplicações Java que utilizam bancos relacionais
+
+=== Teorema do CAP
+
+.Teorema do CAP
+image::cap.png[Teorema CAP]
+
+O teorema CAP se aplica a sistemas distribuídos que armazenam o estado. Eric Brewer, no Simpósio de 2000 sobre Princípios de Computação Distribuída (PODC), conjeturou que, em qualquer sistema de dados compartilhados em rede, há uma troca fundamental entre consistência, disponibilidade e partição.
+Tolerância: Em 2002, Seth Gilbert e Nancy Lynch, do MIT, publicaram uma prova formal da conjectura de Brewer. O teorema afirma que os sistemas de dados compartilhados em rede só podem garantir / suportar fortemente duas das três propriedades a seguir:
+
+* *Consistência*: uma garantia de que cada nó em um cluster distribuído retorna a mesma gravação mais recente e bem-sucedida. Consistência refere-se a cada cliente com a mesma visão dos dados.
+* *Disponibilidade*: Todo nó que não falha retorna uma resposta para todas as solicitações de leitura e gravação em um período de tempo razoável. A palavra chave aqui é “every”. Para estar disponível, cada nó (em cada lado de uma partição de rede) deve ser capaz de responder em um período de tempo razoável.
+* *Tolerância à Partição*: O sistema continua a funcionar e a manter suas garantias de consistência apesar das partições de rede. Partições de rede são um fato da vida. Os sistemas distribuídos que garantem a tolerância à partição podem se recuperar facilmente das partições quando a partição é curada.
+
+
+=== Escalabilidade vs Complexidade
+
+No mundo NoSQL cada estrutura tem o objetivo de resolver problemas particulares. Como o gráfico mostra, existe um balanço entre o modelo de complexidade: Modelos que permitem mais complexidade em modelagem e busca resultam e menos escalabilidade. Por exemplo, o chave-valor é mais escalável, porém, pouco complexo uma vez que as queires são baseadas apenas na chave.
+
+.Escalabilidade vs Complexidade
+image::scalability_vs_complexity.png[Escalabilidade vs Complexidade]
+
+=== Master/Slave vs Masterless
+
+.Master/Slave vs Masterless
+image::masterless_vs_master_slave.png[Master/Slave vs Masterless]
+
+Em linha geral a persistência o mundo NoSQL possui duas maneiras de comunicação entre os servidores:
+
+* *O Master/Slave*: é o modelo de comunicação da qual se caracteriza num controle unidirecional de um ou mais dispositivos. Em linhas gerais, o master é utilizado para a escrita e replicar as informações para todos os nós escravos, que por sua vez, são responsáveis por realizar a leitura da informação. Dessa maneira, garante uma maior consistência de dados, uma vez que o existe apenas um único ponto para a escrita é possível garantir comportamentos como, por exemplo, transação. Porém, existirá um ponto de falha, o master, uma vez que o servidor estiver fora do ar haverá problemas na escrita. Em bancos de dados modernos a eleição de um novo master é feita de maneira automática.
+* *Masterless*: é o modelo de comunicação da qual se caracteriza um controle multidirecional por um ou mais dispositivos. Ou seja, não existe um único nó responsável por leitura ou escrita, cada nó poderá ser responsável pelas duas operações. Assim, não existe nenhum ponto de falha, a elasticidade acontece de maneira natural, porém, a consistência da informação se torna mais difícil uma vez que é necessário um certo tempo para que os nós tenham a informação mais atualizada.
+
+
+=== Clock Vector
+
+
+=== Base de Dados relacionais
+
+
+=== ACID vs BASE
+
+.ACID vs BASE
+image::acid_vs_base.png[ACID vs BASE]
+
+Enquanto os bancos de dados relacionais utilizam o ACID, que é o acrônimo para Atomicidade, consistência, isolamento e durabilidade.
+
+* *Atomicidade*: Todas as operações numa transação serão completadas, do contrário, nenhuma será.
+* *Consistência*: O banco de dados terá um estado consistente quando a transação começa e quando termina.
+* *Isolamento*: Uma transação em andamento, mas ainda não validade deve permanecer isolada de qualquer outra operação, ou seja, não haverá impacto numa transação concorrente.
+* *Durabilidade*: tão logo se complete uma transação, a operação não será revertida.
+
+
+==== Comparando com as aplicações Java que utilizam bancos relacionais
 
 É uma boa prática ter uma camada que é responsável por realizar a comunicação entre o banco de dados e o modelo, o bom e velho Data Acess Object ou DAO. Essa camada contém toda a API de comunicação com o banco de dados, olhando para o paradigma dos bancos relacionais, existem diversos fornecedores, porém, com o padrão JPA o desenvolvedor Java tem algumas vantagens:
 
