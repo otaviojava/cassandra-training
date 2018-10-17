@@ -150,7 +150,7 @@ Em linha geral a persistência o mundo NoSQL possui duas maneiras de comunicaç�
 === Base de Dados relacionais
 
 
-=== ACID vs BASE
+==== ACID vs BASE
 
 .ACID vs BASE
 image::acid_vs_base.png[ACID vs BASE]
@@ -162,6 +162,13 @@ Enquanto os bancos de dados relacionais utilizam o ACID, que é o acrônimo para
 * *Isolamento*: Uma transação em andamento, mas ainda não validade deve permanecer isolada de qualquer outra operação, ou seja, não haverá impacto numa transação concorrente.
 * *Durabilidade*: tão logo se complete uma transação, a operação não será revertida.
 
+
+No mundo NoSQL, eles tem sua arquitetura baseada no BASE. De maneira bastante irônica é um acrônimo oposto do ACID.
+
+
+* *Basic Availability*: Esta restrição afirma que o sistema garante a disponibilidade dos dados
+* *Soft-state*: Os bancos de dados não estarão consistentes de escrita o tempo todo, assim, diferentes nós poderão ter estados desiguais.
+* *Eventual consistency*: Os bancos serão consistências, porém, em algum ponto não determinado, por exemplo, de maneira lenta ou quando for feita uma requisição de leitura.
 
 ==== Comparando com as aplicações Java que utilizam bancos relacionais
 
