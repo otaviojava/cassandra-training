@@ -18,3 +18,6 @@ ifndef::sourcedir[:sourcedir: ../../main/java]
 
 
 = Apostila Treinamento Cassandra
+
+:imagesdir: images
+include::introduction.adoc[]
