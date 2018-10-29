@@ -144,10 +144,20 @@ Em linha geral a persistência o mundo NoSQL possui duas maneiras de comunicaç�
 * *Masterless*: é o modelo de comunicação da qual se caracteriza um controle multidirecional por um ou mais dispositivos. Ou seja, não existe um único nó responsável por leitura ou escrita, cada nó poderá ser responsável pelas duas operações. Assim, não existe nenhum ponto de falha, a elasticidade acontece de maneira natural, porém, a consistência da informação se torna mais difícil uma vez que é necessário um certo tempo para que os nós tenham a informação mais atualizada.
 
 
-=== Clock Vector
-
-
 === Base de Dados relacionais
+
+É muito natural quando aprendemos uma nota tecnologia fazer comparações e analogias com tecnologias antigas com o objetivo de assimilar um novo conhecimento. Dessa forma, ao aprender os bancos de dados não relacionais é muito natural querer comparar-lha com os clássicos bancos de dados relacionais. As premissas estão desde a sua estrutura de persistência, hierarquia e suas propriedades de transação.
+
+
+
+.Comparação entre os bancos de dados relacionais com NoSQL
+|===
+| SQL | Chave-valor | Família de Coluna | Documentos | Grafos
+| Tabela | Bucket | Família de Coluna | Coleçao de documentos | ----
+| Linha | Chave-valor | Colunas | Documentos| Vertex
+| Coluna | ---- | Coluna (nome e a informação) | Documentos (nome e a informação) | Propriedade do Vertex e Edge
+| Relacionamentos| ----| ----|-----| Edge
+|===
 
 
 ==== ACID vs BASE
@@ -162,9 +172,7 @@ Enquanto os bancos de dados relacionais utilizam o ACID, que é o acrônimo para
 * *Isolamento*: Uma transação em andamento, mas ainda não validade deve permanecer isolada de qualquer outra operação, ou seja, não haverá impacto numa transação concorrente.
 * *Durabilidade*: tão logo se complete uma transação, a operação não será revertida.
 
-
 No mundo NoSQL, eles tem sua arquitetura baseada no BASE. De maneira bastante irônica é um acrônimo oposto do ACID.
-
 
 * *Basic Availability*: Esta restrição afirma que o sistema garante a disponibilidade dos dados
 * *Soft-state*: Os bancos de dados não estarão consistentes de escrita o tempo todo, assim, diferentes nós poderão ter estados desiguais.
