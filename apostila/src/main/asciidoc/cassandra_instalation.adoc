@@ -94,7 +94,9 @@ Por padrão docker, todos os arquivos são criados dentro do container e isso si
 
 Assim, para extrair o volume de dados para fora do container é necessário mapear o caminho `/var/lib/cassandra`, por exemplo:
 
-`docker run --name some-cassandra -p 9042:9042 -v /home/otaviojava/Environment/nosql/cassandra:/var/lib/cassandra -d cassandra`
-
+[source,bash]
+----
+docker run --name some-cassandra -p 9042:9042 -v /my/own/datadir:/var/lib/cassandra -d cassandra
+----
 
 === Criando o primeiro cluster com docker-compose
