@@ -100,3 +100,58 @@ docker run --name some-cassandra -p 9042:9042 -v /my/own/datadir:/var/lib/cassan
 ----
 
 === Criando o primeiro cluster com docker-compose
+
+Seguindo a linha do docker e container, para que se execute um cluster é necessário muitos containers. Umas das ferramentas que permite a execução de múltiplos containers é o Docker Compose.
+O Compose é uma ferramenta para executar vários containers, isso é feito de uma maneira bastante simples com um arquivo YAML de configuração, dessa forma, com um único comando é possível executar muitos containers. O arquivo a seguir mostra uma simples configuração utilizando três nós no cluster.
+
+
+.Arquivo docker-compose.yml que contém a configuração de três nós
+[source,yaml]
+----
+
+version:  '3.2'
+
+services:
+
+    db-01:
+        image: "cassandra"
+        networks:
+          - cassandranet
+        environment:
+          broadcast_address: db-01
+          seeds: db-01,db-02,db-03
+        volumes:
+          - /home/otaviojava/Environment/nosql/db1:/var/lib/cassandra
+
+    db-02:
+        image: "cassandra"
+        networks:
+          - cassandranet
+        environment:
+          broadcast_address: db-02
+          seeds: db-01,db-02,db-03
+        volumes:
+          - /home/otaviojava/Environment/nosql/db2:/var/lib/cassandra
+
+    db-03:
+        image: "cassandra"
+        networks:
+          - cassandranet
+        environment:
+          broadcast_address: db-03
+          seeds: db-01,db-02,db-03
+        volumes:
+          - /home/otaviojava/Environment/nosql/db3:/var/lib/cassandra
+
+networks:
+    cassandranet:
+----
+
+
+Com o arquivo docker-compose.yml criado os próximos passos são muito simples:
+
+1. Para iniciar os containers `docker-compose -f docker-compose.yml up -d`
+1. Para parar e remover os containers `docker-compose -f docker-compose.yml down`
+
+
+CAUTION: Para esse exemplo, estão sendo levantados três clusters, ou seja, caso queria rodar localmente verifique se você terá memória suficiente para isso.
