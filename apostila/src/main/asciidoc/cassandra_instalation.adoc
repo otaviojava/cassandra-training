@@ -19,12 +19,11 @@ Antes de iniciar a instalação é importante falar dos prerequisitos do Cassand
 
 Para acessar o client basta executar o `./cqlsh` dentro da pasta `bin`
 
+[source,bash]
 ----
 Connected to Test Cluster at 127.0.0.1:9042.
 [cqlsh 5.0.1 | Cassandra 3.11.3 | CQL spec 3.4.4 | Native protocol v4]
 Use HELP for help.
-cqlsh> SHOW
-HOST     SESSION  VERSION
 cqlsh> SHOW VERSION
 [cqlsh 5.0.1 | Cassandra 3.11.3 | CQL spec 3.4.4 | Native protocol v4]
 cqlsh>
@@ -57,6 +56,35 @@ para utilizar melhor a infraestrutura e, ao mesmo tempo, manter a segurança que
 
 TIP: Esse material não tem como objetivo falar sobre docker, para mais detalhes acesse: https://www.casadocodigo.com.br/products/livro-docker
 
+https://docs.docker.com/install/[Uma vez instalado o docker], basta executar o seguinte comando no console.
 
+[source,bash]
+----
+docker run -d --name casandra-instance -p 9042:9042 cassandra
+----
+
+Esse comando baixa e executa https://store.docker.com/images/cassandra[a imagem oficial do Cassandra], diretamente do docker hub.
+
+Para executar o cqlsh dentro do docker:
+
+1. Liste os containers sendo executados na máquina com o comando `docker ps`
+
+[source,bash]
+----
+$ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                                                       NAMES
+7373093f921a        cassandra           "docker-entrypoint.s…"   9 minutes ago       Up 9 minutes        7000-7001/tcp, 7199/tcp, 9160/tcp, 0.0.0.0:9042->9042/tcp   casandra-instance
+----
+
+2. Uma vez com o id do container do Cassandra encontrado, basta executar o comando para `docker exec -it CONTAINER_ID cqlsh`
+
+[source,bash]
+----
+$ docker exec -it 7373093f921a cqlsh
+Connected to Test Cluster at 127.0.0.1:9042.
+[cqlsh 5.0.1 | Cassandra 3.11.3 | CQL spec 3.4.4 | Native protocol v4] Use HELP for help.
+cqlsh> SHOW VERSION
+[cqlsh 5.0.1 | Cassandra 3.11.3 | CQL spec 3.4.4 | Native protocol v4]
+----
 
 === Criando o primeiro cluster com docker-compose
