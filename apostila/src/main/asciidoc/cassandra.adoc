@@ -2,7 +2,7 @@
 == Cassandra
 
 
-O Cassandra é um banco de dados NOSQL orientado à família de coluna que nasceu para resolver problemas com aplicações que precisam operar com gigantescas cargas de dados além de poder escalar com grande facilidade. Ele nasceu no facebook e hoje vem sendo usado intensamente por empresas dos mais variados portes, tais como Netflix, Twitter, Instagram, HP, IBM, dentre muitas outras. Um fator importante que vale ser citado é a sua adoção crescente inclusive em mercados mais conversadores tais como, instituições financeiras e agências governamentais como a NASA.
+O Cassandra é um banco de dados NOSQL orientado à família de coluna que nasceu para resolver problemas com aplicações que precisam operar com gigantescas cargas de dados além de poder escalar com grande facilidade. Ele nasceu no facebook e hoje vem sendo usado intensamente por empresas dos mais variados portes, tais como Netflix, Twitter, Instagram, HP, IBM, dentre muitas outras. Um fator importante que vale ser citado é a sua adoção crescente inclusive em mercados mais conversadores tais como, instituições financeiras e agências governamentais como a NASA. Esse capítulo tem como principal objetivo falar do corpo e das características do Cassandra e dos seus conceitos.
 
 === Definição
 
@@ -57,6 +57,9 @@ image::column_cassandra.png[Column structure]
 
 No Cassandra, cada nó tem a responsabilidade tanto de escrita como de leitura, o primeiro passo da operação é definido o nó que será responsável pela requisição do client, para essa requisição ele é conhecido como nó coordenador. Com o nó coordenador definido, o próximo passo é a partir da chave gerar uma hash, o particionador, e com esse valor será definido para qual nó será responsável por começar a operação. É importante salientar que cada nó é responsável por uma range de valores e isso é feito de maneira automática, graças ao conceito de Virtual Nodes ou apenas Vnodes.
 
+.A partir das chaves serão gerados um hash, partitioner, com esse hash é definido qual nó será responsável pela requisição e cada nó recebe um range de maneira automática a partir do conceito do Vnode.
+image::coordinator.png[Request structure]
+
 ==== Partitioner
 
 O particionador determina como os dados serão distribuídos através dos nós dentro de um cluster. Basicamente, um particionador é uma função hash a partir da chave. Cada linha dentro da família de coluna é definida a partir de uma chave única que é distribuída através do valor do cluster. A configuração do particionador é feita de modo global em todo o cluster e dentro do Cassandra existem as seguintes opções:
@@ -65,9 +68,26 @@ O particionador determina como os dados serão distribuídos através dos nós d
 * *RandomPartitioner*: gera o hash a partir do MD5.
 * *ByteOrderedPartitioner*: mantém os dados ordenados de maneira léxica.
 
-=== Commit log
-=== Memtable
-=== SSTable
+. A sequência de três linhas e cada linha tem a sua respectiva chave. Com a chave, a partir do partitioner, será criado uma hash do qual será utilizado para definir o nó responsável por reter a requisição.
+image::partitioner.png[Partitioner structure]
+
+
+=== Dentro de um nó Cassandra
+
+
+Uma vez discutido como o Cassandra funciona em cluster, também é preciso falar com ele funciona internamente e suas partes. Tão logo o Cassandra recebe uma operação de escrita, ele armazena a informação na memória numa estrutura chamada de memtable e também utiliza uma estrutura no disco, chamado commit log. Esse commit log recebe cada escrita feita pelo Cassandra e essa escrita permanece mesmo quando o nó está desligado. Assim, quando a se inicia a escrita a sequência dentro de um nó Cassandra é:
+
+* Realiza o logging dentro do commit log
+* Escreve a mesma informação na memória, memtable
+* Realiza a operação de flush a partir do memtable
+* Armazena as informações de maneira ordenada dentro do disco com o SSTables
+
+Uma informação importante é que tanto o memtables e o SSTables são armazenados por tabela, porém, o commit log é compartilhado por todas as tabelas.
+
+
+.A sequência de escrita que acontece dentro de um nó do Cassandra.
+image::write_sequence.png[Sequência de escrita]
+
 === Read Operation
 === Write Operation
 === Consistência vs durabilidade
