@@ -71,6 +71,52 @@ O particionador determina como os dados serão distribuídos através dos nós d
 . A sequência de três linhas e cada linha tem a sua respectiva chave. Com a chave, a partir do partitioner, será criado uma hash do qual será utilizado para definir o nó responsável por reter a requisição.
 image::partitioner.png[Partitioner structure]
 
+=== Consistência vs durabilidade
+
+Para cada requisição para um cluster Cassandra é possível configurar o nível de consistência da qual a operação será realizada. Esse nível de consistência define quantos nós precisam responder ao coordenador para indicar que o processo, de escrita ou leitura, foi realizado com sucesso, a non-lightweight transaction. Um ponto importante é que existe um balanço entre a consistência e a disponibilidade. Por exemplo, dado um datacenter que tenha 10 nós e para cada requisição se escreva em todos. Existirá uma garantia de que todos os nós terão sempre a mesma informação ao mesmo tempo, dessa forma um alto grau de consistência, porém, dado um número altíssimo de requisições ao mesmo tempo ocasionará problema de performance uma vez que para cada requisição é necessário esperar a escrita em todos os nós. Por outro lado, se para cada operação se utilize apenas um único nó as requisições serão melhores distribuídas entre os nós, garantindo disponibilidade, porém, se levará um tempo para que todos os nós tenham a mesma informação (O E do BASE é de eventual persistência).
+
+.Equilíbrio entre consistência e disponibilidade dentro de uma requisição do Cassandra
+image::consistency_vs_disponibility.png[Consistency vs Disponibility]
+
+
+==== Write Operation
+
+A tabela abaixo mostra o nível de consistência de escrita do mais forte para o mais fraco. Vale salientar, que a operação de escrita em cada nó significa a escrita tanto no commit log quanto no memtable.
+
+|===
+| Level | Descrição
+| --- | ---
+| ALL |A operação de escrita em todos os nós da réplica dentro do cluster
+| EACH_QUORUM |A operação de escrita em quorum de réplicas em cada datacenter
+| QUORUM |Similar ao anterior, escrita em quorum atráves de todos os datacenters
+| LOCAL_QUORUM |A operação de escrita em quorum dentro do datacenter do nó coordenador
+| ONE |Deve acontecer a operação de escrita em, pelo menos, um nó
+| TWO |Define a operação de escrita em, pelo menos, dois nós
+| THREE |Define a operação de escrita em, pelo menos, três nós
+| LOCAL_ONE |Deve realizar a operação de escrita em, pelo menos, um nó dentro do datacenter
+| ANY |Garante a operação de escrita em, pelo menos, um nó.
+|===
+
+
+==== Read Operation
+A tabela abaixo mostra a informação de leitura do mais forte para o mais fraco levando em consideração a consistência. Um ponto importante é que em cada operação de leitura existe o conceito de read repair. Na operação de leitura, de uma maneira geral, o nó coordenador realiza um request, partir do nível de consistência, para um certo número de nós. Depois disso, as informações mais recentes são enviadas para o cliente, em seguida, essas informações, as mais recentes, são compartilhadas para os nós que não participaram da requisição de maneira asíncrona.
+
+|===
+| Level | Descrição
+| --- | ---
+| ALL | Retorna a resposta depois de todas as réplicas terem respondidas
+| QUORUM |Retorna a resposta depois do quorum de todos os datacenters terem respondidas
+| LOCAL_QUORUM |Retorna a resposta depois do quorum do datacenter do nó coordenador
+| ONE |Retorna a resposta depois de ler do nó mais próximo
+| TWO |Retorna a resposta depois de ler dos dois nós mais próximos
+| THREE |Retorna a resposta depois de ler dos três nós mais próximos
+| LOCAL_ONE |
+| SERIAL |Permite a leitura do estado atual (e possivelmente não comprometido) dos dados sem propor uma nova adição ou atualização. Se uma leitura SERIAL encontrar uma transação não confirmada em andamento, a transação será confirmada como parte da leitura. Semelhante ao QUORUM.
+|LOCAL_SERIAL|Semelhante ao Serial, porém, confinado ao datacenter semelhante ao LOCAL_QUORUM.
+|===
+
+=== Nós semente
+
 
 === Dentro de um nó Cassandra
 
@@ -87,8 +133,3 @@ Uma informação importante é que tanto o memtables e o SSTables são armazenad
 
 .A sequência de escrita que acontece dentro de um nó do Cassandra.
 image::write_sequence.png[Sequência de escrita]
-
-=== Read Operation
-=== Write Operation
-=== Consistência vs durabilidade
-=== Nós semente
