@@ -26,6 +26,8 @@ Assim, como os bancos de dados relacionais o Cassandra possui uma hierarquia com
 | Column | Key/value pair
 |===
 
+.A estrutura dentro do Cassandra
+image::hierarchy.png[Cassandra structure]
 
 ==== Keyspace
 
@@ -40,6 +42,15 @@ Dentro do Keyspace é possível configurar o fator de replica, o número de máq
 
 A família de coluna é um container de linhas, cada linha é composta por uma ou mais colunas. Cada coluna é composta por nome, o valor e o timestamp, esse timestamp é o que será utilizado para verificar quais informações são os mais atualizados.
 
+
+As partes da coluna são:
+
+* *Nome*: que representa o nome da coluna
+* *Valor*: a informação em si que se encontra dentro da coluna
+* *Timestamp*: tão logo seja criado ou atualizado uma coluna esse valor é atualizado, essa informação serve para informar qual coluna é mais atualizada a partir do algorítimo clock vector. Por exemplo, dado dois nós com a coluna com o mesmo nome, porém, com os valores diferentes a requisição verificará qual timestamp tem o valor mais recente a partir do campo timestamp.
+
+.A estrutura da Column dentro do Cassandra
+image::column_cassandra.png[Column structure]
 
 === Realizando uma operação dentro do Cassandra
 
