@@ -1,0 +1,63 @@
+
+== Cassandra
+
+
+O Cassandra é um banco de dados NOSQL orientado à família de coluna que nasceu para resolver problemas com aplicações que precisam operar com gigantescas cargas de dados além de poder escalar com grande facilidade. Ele nasceu no facebook e hoje vem sendo usado intensamente por empresas dos mais variados portes, tais como Netflix, Twitter, Instagram, HP, IBM, dentre muitas outras. Um fator importante que vale ser citado é a sua adoção crescente inclusive em mercados mais conversadores tais como, instituições financeiras e agências governamentais como a NASA.
+
+=== Definição
+
+Quando se fala de um banco de dados que precisa de escalabilidade e um alto grau de disponibilidade o Apache Cassandra é uma ótima escolha. Dentre as suas características é possível destacar:
+
+* Um alto grau de cases e empresas que o utiliza como Netflix, eBay, Github, etc.
+* Tolerante a falhas: Os dados são replicados para vários nós de maneira que caso um nó caia um outro estará pronto para substitui-lo sem downtime.
+* Descentralizado: O Apache Cassandra utiliza o masterless, assim não existe um único ponto de falha, assim, cada nó no cluster tem a mesma responsabilidade.
+* Elástico: Um número de máquinas pode crescer ou diminuir de maneira linear sem nenhuma interrupção na aplicação.
+
+=== Hierarquia
+
+Assim, como os bancos de dados relacionais o Cassandra possui uma hierarquia como mostra a tabela abaixo:
+
+.Relação entre Cassandra e uma base de dados relacional
+|===
+| Estrutura relacional | Estrutura de família de colunas
+| Database | Keyspace
+| Table | Column Family
+| Row | Column
+| Column | Key/value pair
+|===
+
+
+==== Keyspace
+
+O keyspace é semelhante ao banco de dados, é composta por uma ou mais família de colunas.
+Dentro do Keyspace é possível configurar o fator de replica, o número de máquinas no cluster que receberão cópias da mesma informação, e a configuração de estratégia replicação entre nós além da sua quantidade, no geral as estratégias podem ser:
+
+* *SimpleStrategy*: Define um fator de réplica para um cluster, caso seja necessária mais de um data center existe a opção de NetworkTopologyStrategy.
+* *NetworkTopologyStrategy*: essa estratégia é altamente recomendada para os ambientes de produção e é utilizado quando é necessário utilizar mais de um data center.
+
+
+==== Column Family
+
+A família de coluna é um container de linhas, cada linha é composta por uma ou mais colunas. Cada coluna é composta por nome, o valor e o timestamp, esse timestamp é o que será utilizado para verificar quais informações são os mais atualizados.
+
+
+=== Realizando uma operação dentro do Cassandra
+
+
+No Cassandra, cada nó tem a responsabilidade tanto de escrita como de leitura, o primeiro passo da operação é definido o nó que será responsável pela requisição do client, para essa requisição ele é conhecido como nó coordenador. Com o nó coordenador definido, o próximo passo é a partir da chave gerar uma hash, o particionador, e com esse valor será definido para qual nó será responsável por começar a operação. É importante salientar que cada nó é responsável por uma range de valores e isso é feito de maneira automática, graças ao conceito de Virtual Nodes ou apenas Vnodes.
+
+==== Partitioner
+
+O particionador determina como os dados serão distribuídos através dos nós dentro de um cluster. Basicamente, um particionador é uma função hash a partir da chave. Cada linha dentro da família de coluna é definida a partir de uma chave única que é distribuída através do valor do cluster. A configuração do particionador é feita de modo global em todo o cluster e dentro do Cassandra existem as seguintes opções:
+
+* *Murmur3Partitioner*: a opção default, esse gera o hash a partir do MurmurHash.
+* *RandomPartitioner*: gera o hash a partir do MD5.
+* *ByteOrderedPartitioner*: mantém os dados ordenados de maneira léxica.
+
+=== Commit log
+=== Memtable
+=== SSTable
+=== Read Operation
+=== Write Operation
+=== Consistência vs durabilidade
+=== Nós semente
