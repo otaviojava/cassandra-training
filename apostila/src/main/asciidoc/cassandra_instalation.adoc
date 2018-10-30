@@ -72,8 +72,8 @@ Para executar o cqlsh dentro do docker:
 [source,bash]
 ----
 $ docker ps
-CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                                                       NAMES
-7373093f921a        cassandra           "docker-entrypoint.s…"   9 minutes ago       Up 9 minutes        7000-7001/tcp, 7199/tcp, 9160/tcp, 0.0.0.0:9042->9042/tcp   casandra-instance
+CONTAINER ID        IMAGE
+7373093f921a        cassandra
 ----
 
 2. Uma vez com o id do container do Cassandra encontrado, basta executar o comando para `docker exec -it CONTAINER_ID cqlsh`
@@ -86,5 +86,15 @@ Connected to Test Cluster at 127.0.0.1:9042.
 cqlsh> SHOW VERSION
 [cqlsh 5.0.1 | Cassandra 3.11.3 | CQL spec 3.4.4 | Native protocol v4]
 ----
+
+Por padrão docker, todos os arquivos são criados dentro do container e isso significa:
+* Os dados não existirão quando o container não existirão
+* Isso pode ser difícil quando os dados precisam ser compartilhados entre containers
+* Para escrever na camada do container é necessário possui um https://docs.docker.com/storage/storagedriver/[driver de armazenamento]. Esse driver provê união entre o filesystem utilizando o kernel do Linux. Essa abstração extra https://docs.docker.com/storage/[reduz performance] comparado a utilizando a ter os volumes de dados escrito diretamente no host.
+
+Assim, para extrair o volume de dados para fora do container é necessário mapear o caminho `/var/lib/cassandra`, por exemplo:
+
+`docker run --name some-cassandra -p 9042:9042 -v /home/otaviojava/Environment/nosql/cassandra:/var/lib/cassandra -d cassandra`
+
 
 === Criando o primeiro cluster com docker-compose
