@@ -117,6 +117,7 @@ A tabela abaixo mostra a informação de leitura do mais forte para o mais fraco
 
 === Nós semente
 
+Os nós sementes têm como objetivo de fazer o boostrapping no processo de comunicação, gossip, para os novos nós que entram no cluster. Em analogia seria semelhante ao encarregado ou gerente do setor quando entra um novo funcionário, esse gerente terá a responsabilidade de atualizar as informações para o novo associado, apresentar os novos colegas, até o momento em que ele esteja pronto para começar a colaborar num determindo projeto.
 
 === Dentro de um nó Cassandra
 
