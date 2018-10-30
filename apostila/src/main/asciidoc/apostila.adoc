@@ -22,3 +22,4 @@ ifndef::sourcedir[:sourcedir: ../../main/java]
 :imagesdir: images
 include::introduction.adoc[]
 include::cassandra.adoc[]
+include::cassandra_instalation.adoc[]

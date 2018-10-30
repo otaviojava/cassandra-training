@@ -1,0 +1,34 @@
+
+== Instalação do Cassandra
+
+No capítulos anteriores, foram abordados os conceitos dos bancos de dados não relacionais, suas comparações com o relacional além de dissecar o funcionamento interno do Cassandra. Nesse capítulo, teremos uma visão mais prática do Cassandra, mostraremos com funciona o processo de instalação, configuração, além da abordar a instalação utilizando os novos conceitos que estão quebrando paradigmas na computação em nuvem, isso mesmo o container com Docker.
+
+
+=== Realizando download do Cassandra
+
+Antes de iniciar a instalação é importante falar dos prerequisitos do Cassandra.
+ O Cassandra é um banco de dados feito em Java, assim, para a instalação é necessário que você tenha instalado alguma
+ implementação do https://jcp.org/en/jsr/detail?id=337ope[Java 8] (OpenJDK, Azul, Oracle HotSpot, etc.).
+ Nesse primeiro momento de instalação não será utilizado nenhum outro cliente além do cqlsh, assim, é necessário que o computador
+ também tenha o a última versão do https://www.python.org/downloads/[Python 2.7].
+
+ * Realize o download do Cassandra no Web site do projeto: http://cassandra.apache.org/download/
+ * Depois do download, descompactar o arquivo, por exemplo. `tar -xvf apache-cassandra-3.6-bin.tar.gz`
+ * Com os arquivos descompactados, o próximo passo é entrar na pasta `bin` e iniciar o Apache Cassandra. Para isso, execute `cassandra -f`
+
+
+==== Configurações dentro do arquivo yaml
+
+Para executar um único nó a configuração não é necessário, porém, para os clusters as configurações serão necessárias. Dentro do Cassandra as configurações se encontram dentro da pasta `conf`. Muitas de tais configurações é feito via um arquivo yaml dentro do cassandra.yaml. De uma maneira as configurações desse arquivo são:
+
+
+* *cluster_name*: o nome do cluster.
+* *seeds*: O Ips dos nós sementes separados por vírgulas.
+* *listen_address*: O endereço IP do nó, isto é que permite que o nós se comunica com outros nós dentro do cluster.
+* *listen_interface*: Informa para o Cassandra qual interface utilizar, consequentemente, qual endereço para o uso. É necessário modificar o listen_address ou essa configuração, porém, não os dois.
+* *native_transport_port*: A porta para o transporte e comunicação das queries a partir de um cliente.
+
+=== Simplificando a instalação com containers
+
+
+=== Criando o primeiro cluster com docker-compose
