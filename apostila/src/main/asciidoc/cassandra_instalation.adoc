@@ -17,6 +17,20 @@ Antes de iniciar a instalação é importante falar dos prerequisitos do Cassand
  * Com os arquivos descompactados, o próximo passo é entrar na pasta `bin` e iniciar o Apache Cassandra. Para isso, execute `cassandra -f`
 
 
+Para acessar o client basta executar o `./cqlsh` dentro da pasta `bin`
+
+----
+Connected to Test Cluster at 127.0.0.1:9042.
+[cqlsh 5.0.1 | Cassandra 3.11.3 | CQL spec 3.4.4 | Native protocol v4]
+Use HELP for help.
+cqlsh> SHOW
+HOST     SESSION  VERSION
+cqlsh> SHOW VERSION
+[cqlsh 5.0.1 | Cassandra 3.11.3 | CQL spec 3.4.4 | Native protocol v4]
+cqlsh>
+----
+
+
 ==== Configurações dentro do arquivo yaml
 
 Para executar um único nó a configuração não é necessário, porém, para os clusters as configurações serão necessárias. Dentro do Cassandra as configurações se encontram dentro da pasta `conf`. Muitas de tais configurações é feito via um arquivo yaml dentro do cassandra.yaml. De uma maneira as configurações desse arquivo são:
@@ -28,7 +42,21 @@ Para executar um único nó a configuração não é necessário, porém, para o
 * *listen_interface*: Informa para o Cassandra qual interface utilizar, consequentemente, qual endereço para o uso. É necessário modificar o listen_address ou essa configuração, porém, não os dois.
 * *native_transport_port*: A porta para o transporte e comunicação das queries a partir de um cliente.
 
+
 === Simplificando a instalação com containers
+
+
+image::docker.png[Docker]
+
+Uma maneira de se instalar o Cassandra é através de container com o docker. O container, em uma visão geral,
+é um ambiente isolado e a tecnologia docker utiliza o kernel linux e recursos do kernel, por exemplo,
+Cgroups e namspaces para segregar processos de modo que eles podem ser executados de maneira idependente.
+O objetivo dos containers é criar tal independência: a habilidade de executar diversos processos e aplicativos separadamente
+para utilizar melhor a infraestrutura e, ao mesmo tempo, manter a segurança que você teria em sistemas separados.
+
+
+TIP: Esse material não tem como objetivo falar sobre docker, para mais detalhes acesse: https://www.casadocodigo.com.br/products/livro-docker
+
 
 
 === Criando o primeiro cluster com docker-compose
