@@ -155,3 +155,49 @@ Com o arquivo docker-compose.yml criado os próximos passos são muito simples:
 
 
 CAUTION: Para esse exemplo, estão sendo levantados três clusters, ou seja, caso queria rodar localmente verifique se você terá memória suficiente para isso.
+
+Uma possibilidade é diminuir o consume de memória dos clusters, por exemplo, iniciando três nós e fazendo que cada um tenha no máximo 1 gibabyte de heap.
+
+.Arquivo de configuração de cluster de Cassandra levantando cada nó com 1 gigabyte
+[source,yaml]
+----
+version:  '3.2'
+
+services:
+
+    db-01:
+        image: "cassandra"
+        networks:
+          - cassandranet
+        environment:
+          broadcast_address: db-01
+          seeds: db-01,db-02,db-03
+          JVM_OPTS: -Xms1G -Xmx1G
+        volumes:
+          - /home/otaviojava/Environment/nosql/db1:/var/lib/cassandra
+
+    db-02:
+        image: "cassandra"
+        networks:
+          - cassandranet
+        environment:
+          broadcast_address: db-02
+          seeds: db-01,db-02,db-03
+          JVM_OPTS: -Xms1G -Xmx1G
+        volumes:
+          - /home/otaviojava/Environment/nosql/db2:/var/lib/cassandra
+
+    db-03:
+        image: "cassandra"
+        networks:
+          - cassandranet
+        environment:
+          broadcast_address: db-03
+          seeds: db-01,db-02,db-03
+          JVM_OPTS: -Xms1G -Xmx1G
+        volumes:
+          - /home/otaviojava/Environment/nosql/db3:/var/lib/cassandra
+
+networks:
+    cassandranet:
+----
