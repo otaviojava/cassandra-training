@@ -202,6 +202,7 @@ cqlsh> SELECT * FROM library.book;
 
 ----
 
+TIP: É possível utilizar também `COLUMNFAMILY` ao invés de `TABLE`
 ==== Chave primária
 
 Dentro da família de coluna a chave primária, primary key, é o campo único e todas as famílias de colunas *devem* defini-la. É a partir desse campo que o os dados serão recuperados, por issso, existe uma preocupação inicial com esse campo. A chave primária pode ser constituída por mais de um campo, porém, ela terá um conceito diferente do banco relacional. Ele será dividida em duas partes:
@@ -803,13 +804,363 @@ CREATE TABLE IF NOT EXISTS library.user (
 );
 ----
 
-
 === Manipulando informação
+
+Nesse tópico abordaremos a manipulação de dados, ou seja, será possível utilizar o famoso CRUD, ou seja, criar, recuperar, atualizar, deletar as informações.
+
 ==== Select
+
+O `SELECT` é o tipo de comando utilizado para recuperar as informações dos dados.
+
+[source,sql]
+----
+select_statement ::=  SELECT [ JSON | DISTINCT ] ( select_clause | '*' )
+                      FROM table_name
+                      [ WHERE where_clause ]
+                      [ GROUP BY group_by_clause ]
+                      [ ORDER BY ordering_clause ]
+                      [ PER PARTITION LIMIT (integer | bind_marker) ]
+                      [ LIMIT (integer | bind_marker) ]
+                      [ ALLOW FILTERING ]
+select_clause    ::=  selector [ AS identifier ] ( ',' selector [ AS identifier ] )
+selector         ::=  column_name
+                      | term
+                      | CAST '(' selector AS cql_type ')'
+                      | function_name '(' [ selector ( ',' selector )* ] ')'
+                      | COUNT '(' '*' ')'
+where_clause     ::=  relation ( AND relation )*
+relation         ::=  column_name operator term
+                      '(' column_name ( ',' column_name )* ')' operator tuple_literal
+                      TOKEN '(' column_name ( ',' column_name )* ')' operator term
+operator         ::=  '=' | '<' | '>' | '<=' | '>=' | '!=' | IN | CONTAINS | CONTAINS KEY
+group_by_clause  ::=  column_name ( ',' column_name )*
+ordering_clause  ::=  column_name [ ASC | DESC ] ( ',' column_name [ ASC | DESC ] )*
+----
+
+Por exemplo, na livraria será adicionado uma família de colunas do tipo revista que terá a lista de artigos e o ano do post.
+
+
+[source,sql]
+----
+DROP COLUMNFAMILY IF EXISTS library.magazine;
+CREATE COLUMNFAMILY IF NOT EXISTS library.magazine (
+    id text,
+    posted_at timestamp,
+    articles set<text>,
+    pages int,
+    PRIMARY KEY (id, posted_at)
+);
+
+INSERT INTO library.magazine (id, posted_at, articles, pages) values ('Java Magazine', '2018-01-01',{'Jakarta EE', 'Java 8', 'Cassandra'}, 140);
+INSERT INTO library.magazine (id, posted_at, articles, pages) values ('Java Magazine', '2017-01-01',{'Java EE 8', 'Java 7', 'NoSQL'}, 100);
+----
+
+É possível recuperar todos campos de uma linha, para isso, basta utilizar o `*` asterisco e também busca campos específicos separando o nome do campo por virgula.
+
+[source,sql]
+----
+cqlsh> SELECT * FROM library.magazine;
+
+ id            | posted_at                       | articles                              | pages
+---------------+---------------------------------+---------------------------------------+-------
+ Java Magazine | 2017-01-01 00:00:00.000000+0000 |      {'Java 7', 'Java EE 8', 'NoSQL'} |   100
+ Java Magazine | 2018-01-01 00:00:00.000000+0000 | {'Cassandra', 'Jakarta EE', 'Java 8'} |   140
+
+
+cqlsh> SELECT id, posted_at FROM library.magazine;
+
+ id            | posted_at
+---------------+---------------------------------
+ Java Magazine | 2017-01-01 00:00:00.000000+0000
+ Java Magazine | 2018-01-01 00:00:00.000000+0000
+
+cqlsh> SELECT count(*) FROM library.magazine;
+
+ count
+-------
+     2
+
+----
+
+Também é possível realizar a operação o agrupamento com a keyword `GROUP BY`, porém, para utilizar esse recurso é necessário que o campo alvo seja uma chave primária.
+
+[source,sql]
+----
+cqlsh> SELECT id, max(pages) FROM library.magazine GROUP BY id;
+
+ id            | system.max(pages)
+---------------+-------------------
+ Java Magazine |               140
+
+cqlsh> SELECT id, min(pages) FROM library.magazine GROUP BY id;
+
+  id            | system.min(pages)
+ ---------------+-------------------
+  Java Magazine |               100
+
+
+cqlsh> SELECT id, sum(pages) FROM library.magazine GROUP BY id;
+
+ id            | system.sum(pages)
+---------------+-------------------
+ Java Magazine |               240
+
+----
+
+Também é possível limitar o número de elementos numa query, para isso, se utiliza o `LIMIT`.
+
+
+[source,sql]
+----
+cqlsh> SELECT * FROM library.magazine LIMIT 1;
+
+ id            | posted_at                       | articles                         | pages
+---------------+---------------------------------+----------------------------------+-------
+ Java Magazine | 2017-01-01 00:00:00.000000+0000 | {'Java 7', 'Java EE 8', 'NoSQL'} |   100
+----
+
+
+O recurso de ordenação o resultado é definido pela palavra-chave `ORDER BY`, esse recurso é possível apenas com as chaves primárias do tipo clustering order.
+
+[source,sql]
+----
+ SELECT * FROM library.magazine where id = 'Java Magazine' ORDER BY posted_at DESC;
+ id            | posted_at                       | articles                              | pages
+---------------+---------------------------------+---------------------------------------+-------
+ Java Magazine | 2018-01-01 00:00:00.000000+0000 | {'Cassandra', 'Jakarta EE', 'Java 8'} |   140
+ Java Magazine | 2017-01-01 00:00:00.000000+0000 |      {'Java 7', 'Java EE 8', 'NoSQL'} |   100
+
+
+ SELECT * FROM library.magazine where id = 'Java Magazine' ORDER BY posted_at ASC;
+
+  id            | posted_at                       | articles                              | pages
+ ---------------+---------------------------------+---------------------------------------+-------
+  Java Magazine | 2017-01-01 00:00:00.000000+0000 |      {'Java 7', 'Java EE 8', 'NoSQL'} |   100
+  Java Magazine | 2018-01-01 00:00:00.000000+0000 | {'Cassandra', 'Jakarta EE', 'Java 8'} |   140
+
+
+----
+
+Dentro do select também é possível recuperar o valor no formato *JSON*
+
+[source,sql]
+----
+cqlsh> SELECT JSON * FROM library.magazine;
+
+ [json]
+-----------------------------------------------------------------------------------------------------------------------------------
+      {"id": "Java Magazine", "posted_at": "2017-01-01 00:00:00.000Z", "articles": ["Java 7", "Java EE 8", "NoSQL"], "pages": 100}
+ {"id": "Java Magazine", "posted_at": "2018-01-01 00:00:00.000Z", "articles": ["Cassandra", "Jakarta EE", "Java 8"], "pages": 140}
+
+cqlsh> SELECT JSON id, pages FROM library.magazine;
+
+ [json]
+---------------------------------------
+ {"id": "Java Magazine", "pages": 100}
+ {"id": "Java Magazine", "pages": 140}
+
+----
+
+
+TIP: Como já foi explicado, as operações de buscas que necessitam por condições, onde necessita a cláusula `WHERE`, só serão possíveis ou a partir da chave primário, partition key, ou pela criação de um índice. Existe a exceção que é o uso do recurso do `ALLOW FILTERING`, porém, utilizar esse recurso demanda um altíssimo impacto de performance.
+
 ==== Insert
+
+Dentro da cláusula `INSERT` é possível inserir uma linha dentro da família de coluna.
+
+[source,sql]
+----
+insert_statement ::=  INSERT INTO table_name ( names_values | json_clause )
+                      [ IF NOT EXISTS ]
+                      [ USING update_parameter ( AND update_parameter )* ]
+names_values     ::=  names VALUES tuple_literal
+json_clause      ::=  JSON string [ DEFAULT ( NULL | UNSET ) ]
+names            ::=  '(' column_name ( ',' column_name )* ')'
+----
+
+Para inserir os dados utilizando a cláusula `INSERT` é possível utilizando tanto  de uma forma bem semelhante ao SQL e também como JSON. Por exemplo, utilizando a família de coluna magazine anteior.
+
+[source,sql]
+----
+INSERT INTO library.magazine (id, posted_at, articles, pages) values ('Java Magazine', '2017-01-01',{'Java EE 8', 'Java 7', 'NoSQL'}, 100);
+INSERT INTO library.magazine JSON '{"id": "Java Magazine", "posted_at": "2017-01-01", "pages": 10, "articles": ["Java EE 8", "Java 7", "NoSQL"]}';
+----
+
+Um ponto importante é a chave, assim como no relacional, é obrigatório, vale lembrar que é a partir dela que é definido onde a informação será enviada através do cluster.
+
+
+[source,sql]
+----
+INSERT INTO library.magazine JSON '{"posted_at": "2017-01-01", "pages": 10, "articles": ["Java EE 8", "Java 7", "NoSQL"]}';
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Invalid null value in condition for column id"
+INSERT INTO library.magazine JSON '{"id": "Java Magazine", "posted_at": "2017-01-01", "pages": 10}';
+INSERT INTO library.magazine JSON '{"id": "Java Magazine", "posted_at": "2017-01-01"}';
+----
+
+Um ponto importante é que além da verificação da chave primária, não existe nenhuma outra validação, ou seja, é possível diferentes valores com a mesma chave sem nenhum problema. Basicamente, se a chave não existir ela será criada, do contrário, ela será sobrescrita.
+
+[source,sql]
+----
+INSERT INTO library.magazine JSON '{"id": "Java Magazine", "posted_at": "2017-01-01", "pages": 112}';
+INSERT INTO library.magazine JSON '{"id": "Java Magazine", "posted_at": "2017-01-01", "pages": 121}';
+INSERT INTO library.magazine JSON '{"id": "Java Magazine", "posted_at": "2017-01-01", "pages": 90}';
+----
+
+Também é possível definir uma inserção com TTL, que significa o tempo de vida de uma linha em segundos.
+
+[source,sql]
+----
+TRUNCATE library.magazine ;
+INSERT INTO library.magazine (id, posted_at) values ('Java Magazine', '2017-01-01') USING TTL 10;
+cqlsh> SELECT * FROM library.magazine WHERE id = 'Java Magazine';
+
+ id            | posted_at                       | articles | pages
+---------------+---------------------------------+----------+-------
+ Java Magazine | 2017-01-01 00:00:00.000000+0000 |     null |  null
+//wait 10 seconds
+cqlsh> SELECT * FROM library.magazine WHERE id = 'Java Magazine';
+ id | posted_at | articles | pages
+----+-----------+----------+-------
+
+(0 rows)
+----
+
 ==== Update
+
+Para atualizar existe a cláusula `UPDATE`. De uma maneira geral, o update para o Cassandra nada mais é que um `INSERT` com o `WHERE`. Assim, como no `INSERT` caso a informação exista será atualizada, do contrário, será sobrescrita.
+
+Por exemplo, dado uma simples família de colunas de bibliotecário.
+
+.Criação da família de coluna bibliotecário, como é possível ver é inserido um bibliotecário mesmo utilizando a cláusula `UPDATE`.
+[source,sql]
+----
+DROP COLUMNFAMILY IF EXISTS library.librarian;
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.librarian (
+    id text,
+    name text,
+    PRIMARY KEY (id)
+);
+
+UPDATE library.librarian set name = 'Ivar' where id = 'ivar';
+cqlsh> SELECT * FROM library.librarian;
+
+ id   | name
+------+------
+ ivar | Ivar
+
+(1 rows)
+
+----
+
+Também é possível realizar atualizar o TTL do registro.
+
+[source,sql]
+----
+UPDATE library.librarian USING TTL 12 set name = 'Daniel' where id = 'daniel';
+cqlsh> SELECT * FROM library.librarian where id = 'daniel';
+ id     | name
+--------+--------
+ daniel | Daniel
+//wait 10 seconds
+cqlsh> SELECT * FROM library.librarian where id = 'daniel';
+
+ id | name
+----+------
+----
 ==== Delete
+
+Com a cláusula `DELETE` é possível remover registros dentro do Cassandra é possível remover uma coluna ou todo o registro, sendo que para qualquer operação é necessário a chave primária, a partition key.
+
+
+[source,sql]
+----
+DROP COLUMNFAMILY IF EXISTS library.librarian;
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.librarian (
+    id text,
+    name text,
+    PRIMARY KEY (id)
+);
+
+INSERT INTO library.librarian JSON '{"name": "Ivar", "id": "ivar"}';
+INSERT INTO library.librarian JSON '{"name": "Daniel Dias", "id": "dani"}';
+INSERT INTO library.librarian JSON '{"name": "Gabriela Santana", "id": "gabriela"}';
+
+cqlsh> SELECT * FROM library.librarian;
+
+ id       | name
+----------+------------------
+     dani |      Daniel Dias
+ gabriela | Gabriela Santana
+     ivar |             Ivar
+
+(3 rows)
+
+DELETE FROM library.librarian where id = 'dani';
+cqlsh> SELECT * FROM library.librarian;
+ id       | name
+----------+------------------
+ gabriela | Gabriela Santana
+     ivar |             Ivar
+
+(2 rows)
+DELETE name FROM library.librarian where id = 'ivar';
+cqlsh> SELECT * FROM library.librarian;
+ id       | name
+----------+------------------
+ gabriela | Gabriela Santana
+     ivar |             null
+
+(2 rows)
+
+----
+
 ==== Batch
+
+É partir do `Batch` é possível realizar múltiplas operações de alteração (insert, update e delete). As operações dentro de um batch tem com o objetivo de realizar diversas operações de maneira atômica, ou seja, a operação acontece ou não.
+
+
+É importante salientar que:
+
+* Os `BATCH` podem conter apenas insert, update e delete
+* Os batches não tem total suporte a transação como os bancos relacionais
+* Todas as operações pertencem a partition key para garantir isolamento
+* Por padrão as operações dentro do batch serão atômicas, assim as operações serão eventualmente completas ou nenhuma irá.
+* Existe um grande trade-off no uso do `BATCH` por um lado pode economizar rede, na comunicação entre nó coordenador e os outros nós, para as operações também pode sobreutilizar um nó para diversas operações, daí importância de saber usar esse recurso com pacimônia.
+
+
+[source,sql]
+----
+batch_statement        ::=  BEGIN [ UNLOGGED | COUNTER ] BATCH
+                            [ USING update_parameter ( AND update_parameter )* ]
+                            modification_statement ( ';' modification_statement )*
+                            APPLY BATCH
+modification_statement ::=  insert_statement | update_statement | delete_statement
+----
+
+Por exemplo, realizando operações dentro da família de coluna dos bibliotecários.
+
+[source,sql]
+----
+BEGIN BATCH
+INSERT INTO library.librarian JSON '{"name": "Ivar", "id": "ivar"}';
+INSERT INTO library.librarian JSON '{"name": "Daniel Dias", "id": "dani"}';
+INSERT INTO library.librarian JSON '{"name": "Gabriela Santana", "id": "gabriela"}';
+DELETE FROM library.librarian where id = 'dani';
+APPLY BATCH;
+
+cqlsh> SELECT * FROM library.librarian;
+
+ id       | name
+----------+------------------
+ gabriela | Gabriela Santana
+     ivar |             Ivar
+
+(2 rows)
+
+----
+
 === View materilizada
 === Segurança
 
