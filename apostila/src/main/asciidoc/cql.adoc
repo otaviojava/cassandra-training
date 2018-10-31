@@ -1239,17 +1239,20 @@ WARNINGS: Até o momento o recurso de view materializada se encontra em carater 
 === Segurança
 
 
-
 Um dos pontos que o Cassandra tem suporte é o recurso de segurança. Assim, é possível definir permissão, criar usuário, cria regras, remover permissão dentre outros. O primeiro ponto para utilizar tais recursos é habilitar o recurso de segurança pelo Cassandra. Para isso, é necessário realizar uma mudança dentro do cassandra.yaml dentro da pasta `conf` na linha `authenticator: AllowAllAuthenticator` realizar a mudança para `authenticator: PasswordAuthenticator`.
 Para habilitar o gerenciamento de permissão do Cassandra também é necessário alterar a linha `authorizer: AllowAllAuthorizer` para `authorizer: CassandraAuthorizer`.
 
 
-Caso esteja utilizando docker a solução seria mapear o arquivo de configuração já definido. Assim:
+Caso esteja utilizando docker a solução seria mapear o pasta de configuração já definido. Assim:
 
 [source,sql]
 ----
-dfg
+docker run --name some-cassandra -p 9042:9042 -v /my/own/datadir:/var/lib/cassandra -v  /path/to/config/cassandra.yaml:/etc/cassandra/cassandra.yaml -d cassandra
+//sample
+docker run --name some-cassandra -p 9042:9042 -v /home/otaviojava/data:/var/lib/cassandra -v /home/otaviojava/config:/etc/cassandra -d cassandra
 ----
+
+
 
 Feita a habilitação o primeiro passo é acessar o cliente Cassandra novamente, porém, dessa vez teremos uma mensagem de erro:
 
@@ -1270,7 +1273,12 @@ Use HELP for help.
 cassandra@cqlsh>
 ----
 
+Para docker o acesso é semelhante, basta procurar o ID do container depois adicionar os parâmetros de usuário e senha.
 
+[source,sql]
+----
+ docker exec -it 66e5f38a3815 cqlsh -u cassandra -p cassandra
+----
 
 Toda a criação foi definida a partir dos ROLES, por exemplo, é possível criar alguns usuários.
 
