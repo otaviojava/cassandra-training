@@ -361,9 +361,431 @@ cqlsh> SELECT * FROM library.author;
 
 ==== Índice secundário
 
+
+Existe uma outra opção para buscar as informações da tabela além da chave primária, que é o índice secundário. Ele permite a busca de informação sem que gera o erro do `ALLOW FILTERING` o seu template é exibido a seguir:
+
+[source,sql]
+----
+index_name ::=  re('[a-zA-Z_0-9]+')
+----
+
+Por exemplo, realizar uma busca pelo campo ano na família de coluna de autores é possível com a criação de um índice secundário:
+
+
+[source,sql]
+----
+index_name ::=  re('[a-zA-Z_0-9]+')
+----
+
+Por exemplo, realizar uma busca pelo campo ano na família de coluna de autores é possível executar o seguinte comando:
+
+[source,sql]
+----
+CREATE INDEX year_index ON library.author (year);
+----
+
+Assim, finalmente é possível executar a query a partir do ano:
+
+[source,sql]
+----
+cqlsh> SELECT * FROM library.author where year = 2005;
+
+ name         | book          | country | year
+--------------+---------------+---------+------
+ Joshua Bloch | JAVA PUZZLERS |  Brazil | 2005
+
+(1 rows)
+----
+
+Também é possível remover o índice criado com o DROP INDEX:
+
+[source,sql]
+----
+drop_index_statement ::=  DROP INDEX [ IF EXISTS ] index_name
+----
+
+No nosso exemplo:
+
+[source,sql]
+----
+DROP  INDEX IF EXISTS library.year_index;
+----
+
+
+==== Como funciona o índice secundário
+
+Os índices secundários são criados para uma coluna dentro de uma família de coluna. Esses índices são armazenados localmente para cada nó e é criado em backgroug. If uma query baseada em índice secundário é utilizado, ou seja, não é restrito pela chave, dessa maneira aumentará a latência uma vez que não limitado pela chave e todos os nós serão consultados. Esse é um dos motivos pelo qual, algumas documentações do Cassandra considera essa criação como ant-pattern.
+
+TIP: Uma maneira eficiente de usar o índice secundário é utilizar-lho em parceria com a chave primária, partition key, assim ele será endereçado num range de nós específicos.
+
+Existem algumas boas práticas ao se utilizar índices que são:
+
+* *Não* utilizar quando existe um alto grau de cardinalidade
+* *Não* utilizar em campos que são atualizados com uma alta frequência
+
+
+
 === Tipos no Cassandra
 
+Dentro de uma família de colunas cada campo tem um tipo definido. Esse tipo define como o dado será armazenado dentro do banco de dados. No cassandra os tipos são devividos em três tipos:
+
+* Tipos nativos
+* Tipos de coleção
+* User-defined-type UDT
+* Tuplas
+
+==== Tipos nativos
+
+Os tipos nativos, são os tipos do qual o Cassandra já tem suporte e não é necessário realizar nenhuma modificação ou criação dentro do banco de dados.
+
+
+.Os principais tipos nativos do Cassandra
+|===
+| Tipo | descrição
+| --- | ---
+|ascii|ASCII String
+|bigint|Um long 64-bit signed
+|blob|Um grande array de bytes
+|boolean|Tem o valor true ou falso
+|counter|Uma coluna contadora (long 64-bit signed)
+|date|Uma data
+|decimal|Um tipo de precisão decimal
+|double|64-bit IEEE-754 de ponto flutuante
+|duration|Um tipo de duração com precisão em nanosegundos
+|float|32-bit IEEE-754 floating point
+|inet|Um endereço IP
+|int|32-bit signed int
+|smallint|16-bit signed int
+|text| Uma String como UTF8
+|time|Uma data com precisão em nanosegundos
+|timestamp|Um timestamp com precisão em milisegundos
+|timeuuid|Version 1 UUID, generally used as a “conflict-free” timestamp. Also see Timeuuid functions
+|uuid|A UUID (of any version)
+|varchar|Uma String em UTF8
+|===
+
+
+==== Coleções
+
+Dentro do Cassandra existe suporte para três tipos de coleções que seguem a mesma linha do mundo Java. Essas coleções se encaixam perfeitamente quando é necessário ter um campo que um conjunto de itens, por exemplo, a lista de telefones ou de contatos.
+
+[source,sql]
+----
+collection_type ::=  MAP '<' cql_type ',' cql_type '>'
+                     | SET '<' cql_type '>'
+                     | LIST '<' cql_type '>'
+----
+
+===== List
+
+É a uma sequência de itens ordenado pela posição da qual foi adicionado, por exemplo, dado uma família de coluna de leitores é possível ter uma lista livros que o mesmo já leu. Assim:
+
+
+.Criação da família de coluna de leitores
+[source,sql]
+----
+CREATE TABLE IF NOT EXISTS library.reader (
+    name text,
+    books list<text>,
+    PRIMARY KEY (name)
+);
+
+INSERT INTO library.reader (name, books) VALUES ('Poliana', ['The Shack','The Love','Clean Code']);
+INSERT INTO library.reader (name, books) VALUES ('David', ['Clean Code','Effectove Java','Clean Code']);
+
+cqlsh> SELECT * FROM library.reader;
+
+ name    | books
+---------+------------------------------------------------
+   David | ['Clean Code', 'Effectove Java', 'Clean Code']
+ Poliana |        ['The Shack', 'The Love', 'Clean Code']
+
+(2 rows)
+
+----
+
+Dentro da lista é possível tanto substituir a corrente lista, alterar um único elemento ou adicionar novos elementos que será mostrado respectivamente.
+
+
+[source,sql]
+----
+//repleace
+cqlsh> UPDATE library.reader SET books = [ 'Java EE 8'] WHERE name = 'David';
+cqlsh> SELECT * FROM library.reader where name = 'David';
+
+ name    | books
+---------+-----------------------------------------
+   David |                           ['Java EE 8']
+
+//appending
+UPDATE library.reader SET books = books + [ 'Clean Code'] WHERE name = 'David';
+cqlsh> SELECT * FROM library.reader where name = 'David';
+ name  | books
+-------+-----------------------------
+ David | ['Java EE 8', 'Clean Code']
+
+//update an element
+UPDATE library.reader SET books[1]= 'Clean Architecture' WHERE name = 'David';
+cqlsh> SELECT * FROM library.reader where name = 'David';
+ name  | books
+-------+-------------------------------------
+ David | ['Java EE 8', 'Clean Architecture']
+
+----
+
+Também é possível remover os elementos com o `DELETE` além de remover elementos com o `UPDATE`.
+
+[source,sql]
+----
+DELETE books[1] FROM library.reader where name = 'David';
+cqlsh> SELECT * FROM library.reader WHERE name= 'David';
+
+ name  | books
+-------+---------------
+ David | ['Java EE 8']
+
+
+UPDATE library.reader SET books = books - [ 'Java EE 8' ] WHERE name = 'David';
+cqlsh> SELECT * FROM library.reader WHERE name= 'David';
+ name  | books
+-------+-------
+ David |  null
+----
+
+===== Set
+
+O Set é similar com o List, porém, ele não permite valores duplicados, assim, utilizando o mesmo exemplo citado anteriormente, porém, com Set teremos:
+
+.Criação da família de coluna de leitores, dessa vez, é possível ver que o livro “Clean Code” do leitor “David” não aparece mais duplicado.
+[source,sql]
+----
+DROP TABLE IF EXISTS library.reader;
+
+CREATE TABLE IF NOT EXISTS library.reader (
+    name text,
+    books set<text>,
+    PRIMARY KEY (name)
+);
+
+INSERT INTO library.reader (name, books) VALUES ('Poliana', {'The Shack','The Love','Clean Code'});
+INSERT INTO library.reader (name, books) VALUES ('David', {'Clean Code','Effectove Java','Clean Code'});
+
+cqlsh> SELECT * FROM library.reader;
+
+ name    | books
+---------+----------------------------------------
+   David |        {'Clean Code', 'Effectove Java'}
+ Poliana | {'Clean Code', 'The Love', 'The Shack'}
+
+(2 rows)
+
+----
+
+Dentro do Set é possível tanto substituir a corrente coleção ou adicionar novos elementos que será mostrado respectivamente.
+
+
+[source,sql]
+----
+//repleace
+cqlsh> UPDATE library.reader SET books = { 'Java EE 8'} WHERE name = 'David';
+cqlsh> SELECT * FROM library.reader where name = 'David';
+
+ name    | books
+---------+-----------------------------------------
+   David |                           {'Java EE 8'}
+
+//appending
+UPDATE library.reader SET books = books + { 'Clean Code'} WHERE name = 'David';
+cqlsh> SELECT * FROM library.reader where name = 'David';
+ name  | books
+-------+-----------------------------
+ David | {'Java EE 8', 'Clean Code'}
+
+----
+
+TIP: Como recomendação o tipo `List` tem algumas limitações e problemas de performance comparado ao `Set` caso possa escolher, sempre priorize o `Set`.
+
+
+===== Map
+
+O mapa ele segue a linha de um dicionário de dados ou de um java.util.Map, caso você seja do mundo Java. Por exemplo, dado o exemplo anteior de leitores, nós gostaríamos de adicionar informações de contato. Esse contato pode ser de inúmeras formas, por exemplo, via e-mail, telefone, twitter, etc. Um bom candidato para isso seria o Map.
+
+
+[source,sql]
+----
+DROP TABLE IF EXISTS library.reader;
+
+CREATE TABLE IF NOT EXISTS library.reader (
+    name text,
+    books set<text>,
+    contacts map<text,text>,
+    PRIMARY KEY (name)
+);
+INSERT INTO library.reader (name, books, contacts) VALUES ('Poliana', {'The Shack','The Love','Clean Code'},
+{'email': 'poliana@email.com','phone': '+1 55 486848635', 'twitter': 'polianatwitter', 'facebook': 'polianafacebook'});
+INSERT INTO library.reader (name, books, contacts) VALUES ('David', {'Clean Code'}, {'email': 'david@email.com'
+,'phone': '+1 55 48684865', 'twitter': 'davidtwitter'});
+
+cqlsh> SELECT * FROM library.reader;
+
+ name    | books                                   | contacts
+---------+-----------------------------------------+------------------------------------------------------------------------------------------------------------------------
+   David |                          {'Clean Code'} |                                     {'email': 'david@email.com', 'phone': '+1 55 48684865', 'twitter': 'davidtwitter'}
+ Poliana | {'Clean Code', 'The Love', 'The Shack'} | {'email': 'poliana@email.com', 'facebook': 'polianafacebook', 'phone': '+1 55 486848635', 'twitter': 'polianatwitter'}
+
+----
+
+Assim, como as coleções anteriores, é possível realizar alterações:
+
+[source,sql]
+----
+//to update a key element
+UPDATE library.reader SET contacts['twitter'] = 'fakeaccount' WHERE name = 'Poliana';
+cqlsh> SELECT * from library.reader where name = 'Poliana';
+
+ name    | books                                   | contacts
+---------+-----------------------------------------+---------------------------------------------------------------------------------------------------------------------
+ Poliana | {'Clean Code', 'The Love', 'The Shack'} | {'email': 'poliana@email.com', 'facebook': 'polianafacebook', 'phone': '+1 55 486848635', 'twitter': 'fakeaccount'}
+//to append a new entry
+UPDATE library.reader SET contacts = contacts+ {'youtube':'youtubeaccount'} WHERE name = 'Poliana';
+cqlsh> SELECT * from library.reader where name = 'Poliana';
+ name    | books                                   | contacts
+---------+-----------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------
+ Poliana | {'Clean Code', 'The Love', 'The Shack'} | {'email': 'poliana@email.com', 'facebook': 'polianafacebook', 'phone': '+1 55 486848635', 'twitter': 'fakeaccount', 'youtube': 'youtubeaccount'}
+//remove an element
+DELETE contacts['youtube'] FROM  library.reader where  name = 'Poliana';
+cqlsh> SELECT * from library.reader where name = 'Poliana';
+ name    | books                                   | contacts
+---------+-----------------------------------------+---------------------------------------------------------------------------------------------------------------------
+ Poliana | {'Clean Code', 'The Love', 'The Shack'} | {'email': 'poliana@email.com', 'facebook': 'polianafacebook', 'phone': '+1 55 486848635', 'twitter': 'fakeaccount'}
+//to remove elements by the key
+UPDATE library.reader SET contacts = contacts - {'youtube','twitter'} WHERE name = 'Poliana';
+cqlsh> SELECT * from library.reader where name = 'Poliana';
+ name    | books                                   | contacts
+---------+-----------------------------------------+-------------------------------------------------------------------------------------------
+ Poliana | {'Clean Code', 'The Love', 'The Shack'} | {'email': 'poliana@email.com', 'facebook': 'polianafacebook', 'phone': '+1 55 486848635'}
+// to repleace the whole map
+UPDATE library.reader SET contacts= {'email': 'just@email.com'} WHERE name = 'Poliana';
+cqlsh> SELECT * from library.reader where name = 'Poliana';
+ name    | books                                   | contacts
+---------+-----------------------------------------+-----------------------------
+ Poliana | {'Clean Code', 'The Love', 'The Shack'} | {'email': 'just@email.com'}
+
+----
+
+
+==== Tupla
+
+Uma tupla é uma combinação de Chave valor, para o mundo Java é semelhante ao java.util.Map.Entry. Sua estrutura de criação é:
+
+[source,sql]
+----
+tuple_type    ::=  TUPLE '<' cql_type ( ',' cql_type )* '>'
+tuple_literal ::=  '(' term ( ',' term )* ')'
+----
+
+Para esse exemplo, utilizando a mesma família de coluna de leitores, porém, assumiremos que apenas uma única informação de contato, independente de qual seja, é suficiente. Assim:
+
+[source,sql]
+----
+DROP TABLE IF EXISTS library.reader;
+
+CREATE TABLE IF NOT EXISTS library.reader (
+    name text,
+    books set<text>,
+    contact tuple<text,text>,
+    PRIMARY KEY (name)
+);
+INSERT INTO library.reader (name, books, contact) VALUES ('Poliana', {'The Shack','The Love','Clean Code'}, ('email', 'poliana@email.com'));
+cqlsh> SELECT * FROM library.reader;
+
+ name    | books                                   | contact
+---------+-----------------------------------------+--------------------------------
+ Poliana | {'Clean Code', 'The Love', 'The Shack'} | ('email', 'poliana@email.com')
+
+----
+
+WARNING: Diferente das coleções não é possível substituir um único elemento da tupla como apenas a chave ou o valor. É necessário atualizar todo o campo.
+
+
 ==== User-Defined Types
+
+O user-defined Types, ou apenas UDT, é um tipo de dados criado pelo usuário. Esse tipo é criado a partir de um keyspace e segue o mesmo princípio de uma família de colunas, ou seja, será possível criar, alterar e dropar um UDT.
+
+[source,sql]
+----
+create_type_statement ::=  CREATE TYPE [ IF NOT EXISTS ] udt_name
+                               '(' field_definition ( ',' field_definition )* ')'
+field_definition      ::=  identifier cql_type
+----
+
+Assim, como o tipo nativo, para ser utilizado é necessário defini-lo dentro de uma família de coluna. Por exemplo, para informação de um usuário da biblioteca é necessário o endereço, e nesse endereço terá o país e a cidade.
+
+[source,sql]
+----
+CREATE TYPE IF NOT EXISTS library.name (
+    first_name text,
+    last_name text,
+);
+CREATE TABLE IF NOT EXISTS library.user (
+    id text,
+    name name,
+    PRIMARY KEY (id)
+);
+INSERT INTO library.user (id, name) values ('otaviojava', {first_name: 'Otavio', last_name: 'Santana'});
+INSERT INTO library.user (id, name) values ('poliana', {first_name: 'Poliana', last_name: 'Santana'});
+cqlsh> SELECT * FROM library.user;
+
+ id         | name
+------------+-----------------------------------------------
+    poliana | {first_name: 'Poliana', last_name: 'Santana'}
+ otaviojava |  {first_name: 'Otavio', last_name: 'Santana'}
+----
+
+Por exemplo, dado o tipo nome, será adicionado o campo nome do meio.
+
+
+[source,sql]
+----
+ALTER TYPE library.name ADD middle_name text;
+cqlsh> SELECT * FROM library.user;
+
+ id         | name
+------------+------------------------------------------------------------------
+    poliana | {first_name: 'Poliana', last_name: 'Santana', middle_name: null}
+ otaviojava |  {first_name: 'Otavio', last_name: 'Santana', middle_name: null}
+
+INSERT INTO library.user (id, name) values ('otaviojava', {first_name: 'Otavio', last_name: 'Santana', middle_name: 'Gonçalves'});
+INSERT INTO library.user (id, name) values ('poliana', {first_name: 'Poliana', last_name: 'Santana', middle_name: 'Santos'});
+
+cqlsh> SELECT * FROM library.user;
+ id         | name
+------------+------------------------------------------------------------------------
+    poliana |   {first_name: 'Poliana', last_name: 'Santana', middle_name: 'Santos'}
+ otaviojava | {first_name: 'Otavio', last_name: 'Santana', middle_name: 'Gonçalves'}
+----
+
+Também é possível remover remover o UDT como `DROP UDT`.
+
+[source,sql]
+----
+drop_type_statement ::=  DROP TYPE [ IF EXISTS ] udt_name
+----
+
+Por exemplo, ao remover o campo nome da família de colunas:
+
+[source,sql]
+----
+ALTER COLUMNFAMILY library.user DROP name;
+cqlsh> SELECT * FROM library.user;
+ id
+------------
+    poliana
+ otaviojava
+
+DROP TYPE IF EXISTS library.name;
+----
+
 
 === Manipulando informação
 ==== Select
@@ -371,7 +793,6 @@ cqlsh> SELECT * FROM library.author;
 ==== Update
 ==== Delete
 ==== Batch
-=== Indice secundário
 === View materilizada
 === Segurança
 

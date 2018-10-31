@@ -1,0 +1,6 @@
+
+== Referências
+
+
+https://pantheon.io/blog/cassandra-scale-problem-secondary-indexes
+https://docs.datastax.com/en/cassandra/3.0/cassandra/dml/dmlIndexInternals.html
