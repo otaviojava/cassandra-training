@@ -786,6 +786,23 @@ cqlsh> SELECT * FROM library.user;
 DROP TYPE IF EXISTS library.name;
 ----
 
+Também é possível criar uma coleção de UDTs, para isso é necessário utilizar o keyword `frozen`, vale salientar que o UDT tem o seu funcionamento semelhante de uma tupla, ou seja, não é possível  alterar um único elemento.
+
+[source,sql]
+----
+DROP TABLE IF EXISTS library.user;
+DROP TABLE IF EXISTS library.user;
+CREATE TYPE IF NOT EXISTS library.phone (
+    country_code int,
+    number text,
+);
+CREATE TABLE IF NOT EXISTS library.user (
+    id text,
+    phones set<frozen<phone>>,
+    PRIMARY KEY (id)
+);
+----
+
 
 === Manipulando informação
 ==== Select
