@@ -1,0 +1,10 @@
+
+== Integrando Cassandra com motor de Busca
+
+
+=== Motor de busca
+=== O que é o Apache Lucene?
+=== Vantagens dentro de um motor de busca
+=== Elastic Search
+=== Apache Solr
+=== Projetos que já existem

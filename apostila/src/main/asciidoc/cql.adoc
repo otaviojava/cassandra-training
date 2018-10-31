@@ -1,0 +1,18 @@
+
+== Conhecendo o CQL
+
+=== Keyspace
+=== Familia de Colunas
+==== Tipos no Cassandra
+==== User-Defined Types
+=== Manipulando informação
+==== Select
+==== Insert
+==== Update
+==== Delete
+==== Batch
+=== Indice secundário
+=== View materilizada
+=== Segurança
+
+

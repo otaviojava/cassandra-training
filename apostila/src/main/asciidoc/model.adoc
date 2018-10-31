@@ -1,0 +1,10 @@
+
+== Modelando sua Aplicação com Cassandra
+
+
+=== Dicas de Modelagem
+=== Índices secundários
+=== A desnormalização é a sua melhor amiga
+=== Casos Um para N
+=== Casos Um para N
+=== Casos N para N

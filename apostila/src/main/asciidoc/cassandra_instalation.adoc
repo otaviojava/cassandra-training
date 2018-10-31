@@ -67,7 +67,7 @@ Esse comando baixa e executa https://store.docker.com/images/cassandra[a imagem 
 
 Para executar o cqlsh dentro do docker:
 
-1. Liste os containers sendo executados na máquina com o comando `docker ps`
+* Liste os containers sendo executados na máquina com o comando `docker ps`
 
 [source,bash]
 ----
@@ -76,7 +76,7 @@ CONTAINER ID        IMAGE
 7373093f921a        cassandra
 ----
 
-2. Uma vez com o id do container do Cassandra encontrado, basta executar o comando para `docker exec -it CONTAINER_ID cqlsh`
+* Uma vez com o id do container do Cassandra encontrado, basta executar o comando para `docker exec -it CONTAINER_ID cqlsh`
 
 [source,bash]
 ----
@@ -151,7 +151,7 @@ networks:
 Com o arquivo docker-compose.yml criado os próximos passos são muito simples:
 
 1. Para iniciar os containers `docker-compose -f docker-compose.yml up -d`
-1. Para parar e remover os containers `docker-compose -f docker-compose.yml down`
+2. Para parar e remover os containers `docker-compose -f docker-compose.yml down`
 
 
 CAUTION: Para esse exemplo, estão sendo levantados três clusters, ou seja, caso queria rodar localmente verifique se você terá memória suficiente para isso.
