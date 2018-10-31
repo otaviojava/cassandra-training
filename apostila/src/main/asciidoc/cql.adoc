@@ -1,10 +1,219 @@
 
 == Conhecendo o CQL
 
+A comunicação com o banco de dados seja para a criação de tabelas, manipulação de dados é
+certamente a coisa mais trivial num banco de dados, seja relacional, seja não relacional.
+O Cassandra oferece sua própria linguagem para comunicação com o banco de dados,
+o Cassandra Query language ou CQL. O CQL oferece uma linguagem próximo ao SQL, porém, de maneira mais simples uma vez que, por exemplo, não existe os conceitos de joins
+(inner join, left join, dentre outros) dentro das buscas do Cassandra. Um desenvolvedor que já conheça o SQL terá uma curva de aprendizagem muito menor para aprender essa linguagem do Cassandra.
+Esse capítulo terá o objetivo de falar um pouco sobre essa linguagem.
+
+TIP: Para essas operações utilizaremos o client cqlsh que explicamos o seu acesso no capítulo anterior.
+
 === Keyspace
+
+A nossa primeira parada no CQL é a criação da maior estrutura dentro da hierarquia do Cassandra, sim o keyspace. É durante a criação do keyspace que é definido a estratégia de replicação e o fator de réplica para os dados. O template da criação é mostrado a seguir:
+
+[source,sql]
+----
+create_keyspace_statement ::=  CREATE KEYSPACE [ IF NOT EXISTS ] keyspace_name WITH options
+----
+
+Por exemplo, ao se criar um keyspace de livraria:
+
+[source,sql]
+----
+CREATE KEYSPACE library  WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
+//or
+CREATE KEYSPACE library
+           WITH replication = {'class': 'NetworkTopologyStrategy', 'DC1' : 1, 'DC2' : 3}
+            AND durable_writes = false;
+----
+
+Realizado a criação do novo keyspace é possível verificar os keyspaces criados no Cassandra para isso realizaremos a nossa primeira query. `select * from system_schema.keyspaces;` é possível perceber a semelhança com o banco de dados relacional. Falaremos mais sobre buscar informações nos itens a seguir.
+
+.Resultado simplicado da busca pelo keyspace 'library'
+[source,sql]
+----
+cqlsh> select * from system_schema.keyspaces where keyspace_name= 'library';
+
+ keyspace_name |replication
+---------------+------------------------------------------------------
+       library |{'class': 'SimpleStrategy', 'replication_factor': '3'}
+
+(1 rows)
+----
+
+Uma vez criado o keyspace é possível realizar alguma alteração do mesmo, para isso é necessário utilizar o *alter keyspace*. O template é mostrado a seguir:
+
+[source,sql]
+----
+alter_keyspace_statement ::=  ALTER KEYSPACE keyspace_name WITH options
+----
+
+Por exemplo, alterando o keyspace library:
+
+[source,sql]
+----
+ALTER KEYSPACE Excelsior WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 4};
+----
+
+Também é possível remover o keyspace com o *drop keyspace*, no nosso exemplo:
+
+[source,sql]
+----
+DROP KEYSPACE library;
+----
+
+O que acontece caso se remova ou se crie duas vezes o mesmo keyspace?
+Caso o usuário tenta criar ou remover mais de uma vez a mesma tabela, uma mensagem de erro é gerada. Por exemplo, `Keyspace 'library' already exists` ou `ConfigurationException: Cannot drop non existing keyspace 'library'.` para criar ou remover respectivamente. Uma maneira de evitar tal erro é realizar essa alteração caso realmente faça sentido, por exemplo, só crie caso ela não exista ou só remova caso ela exista. Com esse objetivo a sintaxe suporta essa condição, usando o mesmo exemplo de livraria executando o a criação e a remoção de maneira segura.
+
+
+[source,sql]
+----
+DROP KEYSPACE IF EXISTS library;
+CREATE KEYSPACE IF NOT EXISTS library  WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
+----
+
 === Familia de Colunas
-==== Tipos no Cassandra
+
+A criação da família de coluna de maneira análoga é semelhante a criação da tabela é nela que são definidos os campos, partition key, clustering key, o índice, e mais configurações, para isso basta utilizar o template `CREATE TABLE`:
+
+
+[source,sql]
+----
+create_table_statement ::=  CREATE TABLE [ IF NOT EXISTS ] table_name
+                            '('
+                                column_definition
+                                ( ',' column_definition )*
+                                [ ',' PRIMARY KEY '(' primary_key ')' ]
+                            ')' [ WITH table_options ]
+column_definition      ::=  column_name cql_type [ STATIC ] [ PRIMARY KEY]
+primary_key            ::=  partition_key [ ',' clustering_columns ]
+partition_key          ::=  column_name
+                            | '(' column_name ( ',' column_name )* ')'
+clustering_columns     ::=  column_name ( ',' column_name )*
+table_options          ::=  COMPACT STORAGE [ AND table_options ]
+                            | CLUSTERING ORDER BY '(' clustering_order ')' [ AND table_options ]
+                            | options
+clustering_order       ::=  column_name (ASC | DESC) ( ',' column_name (ASC | DESC) )*
+----
+
+Por exemplo, dado que foi criado o keyspace library o próximo passo é criar a família de coluna de livros:
+
+.A simples criação de uma família de coluna de livros do qual temos o nome como a chave (que deve ser única e, atualmente, é a única forma de buscar o livro).
+[source,sql]
+----
+CREATE TABLE library.book (
+    name text PRIMARY KEY,
+       year int
+);
+----
+
+TIP: É possível também verificar a família de coluna existe antes de criar, utilizando o `IF NOT EXISTS` semelhante ao keyspace.
+
+Também é possível realizar alterações na família de coluna, por exemplo, adicionar ou remover um campo dentro da família de coluna. Para isso, é necessário utilizar o seguinte template:
+
+[source,sql]
+----
+alter_table_statement   ::=  ALTER TABLE table_name alter_table_instruction
+alter_table_instruction ::=  ADD column_name cql_type ( ',' column_name cql_type )*
+                             | DROP column_name ( column_name )*
+                             | WITH options
+----
+
+Por exemplo, adicionar o campo autor:
+
+[source,sql]
+----
+ALTER TABLE library.book ADD author text;
+----
+
+Caso queria remover o mesmo campo:
+
+[source,sql]
+----
+ALTER TABLE library.book DROP author;
+----
+
+Também é possível destruir a estrutura recém-criada.
+
+[source,sql]
+----
+drop_table_statement ::=  DROP TABLE [ IF EXISTS ] table_name
+----
+
+No nosso exemplo:
+
+[source,sql]
+----
+DROP TABLE IF EXISTS library.book;
+----
+
+Existem caso que o objetivo não distruir a estrutura, mas remover todo o conteúdo e manter a estrutura, para isso, é possível truncar a família de coluna. Para isso, existe o comando `TRUNCATE`.
+
+[source,sql]
+----
+truncate_statement ::=  TRUNCATE [ TABLE ] table_name
+----
+
+
+Por exemplo, ao se criar novamente a família de coluna e adicionamos alguns livros, em seguida, truncamos a tabela e verificamos o resultado.
+
+
+.Criação da tabela `book` e a inserção de dois livros
+[source,sql]
+----
+CREATE TABLE IF NOT EXISTS library.book (
+    name text PRIMARY KEY,
+       year int
+);
+INSERT INTO library.book  JSON '{"name": "Effective Java", "year": 2001}';
+INSERT INTO library.book  JSON '{"name": "Clean Code", "year": 2008}';
+----
+
+.Executando a query para buscar o resultado
+[source,sql]
+----
+cqlsh> SELECT * FROM library.book;
+
+ name           | year
+----------------+------
+     Clean Code | 2008
+ Effective Java | 2001
+
+(2 rows)
+----
+
+[source,sql]
+----
+TRUNCATE library.book;
+----
+
+.Executando a query para buscar o resultado
+[source,sql]
+----
+cqlsh> SELECT * FROM library.book;
+
+ name | year
+------+------
+
+(0 rows)
+
+----
+
+==== Chave primária
+
+==== Tipos estáticos
+
+==== Particion key vs clustering columns
+
+==== Índice secundário
+
+=== Tipos no Cassandra
+
 ==== User-Defined Types
+
 === Manipulando informação
 ==== Select
 ==== Insert
