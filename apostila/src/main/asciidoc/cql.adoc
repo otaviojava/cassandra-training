@@ -1162,6 +1162,289 @@ cqlsh> SELECT * FROM library.librarian;
 ----
 
 === View materilizada
+
+A desanimalização é a melhor amiga dos bancos de dados do tipo não relacionais, com o Cassandra isso não é uma exceção. Um dos recursos que podem facilitar nessa modelagem é a criação de view materializadas. Esse recurso serve como uma aliada para a desnormalização ao mesmo tempo que garante a consistência de uma família de coluna. Um ponto importante é que a view materializada não pode sofrer nenhuma alteração.
+
+
+[source,sql]
+----
+create_materialized_view_statement ::=  CREATE MATERIALIZED VIEW [ IF NOT EXISTS ] view_name AS
+                                            select_statement
+                                            PRIMARY KEY '(' primary_key ')'
+                                            WITH table_options
+----
+
+Por exemplo, considerando novamente o caso do livro. Considerando que temos o código o ISBN, International Standard Book Number que funciona como um registro único do livro no mundo, e tal código é que os funcionários utilizam frequentemente para emprestar ou não um livro dentro da biblioteca. Assim, criaremos a família de coluna da seguinte forma:
+
+[source,sql]
+----
+DROP COLUMNFAMILY IF EXISTS library.book;
+CREATE COLUMNFAMILY IF NOT EXISTS library.book (
+    isbn bigint,
+    name text,
+    author text,
+    PRIMARY KEY (isbn)
+);
+
+INSERT INTO library.book JSON '{"isbn": 1, "name": "Clean Code", "author": "Robert Cecil Martin"}';
+INSERT INTO library.book JSON '{"isbn": 2, "name": "Effective Java", "author": "Joshua Bloch"}';
+INSERT INTO library.book JSON '{"isbn": 3, "name": "The Pragmatic Programmer", "author": "Andy Hunt"}';
+----
+
+
+Pronto, agora é possível realizar buscas de maneira tranquila a partir do ISBN. Porém, considerando que o ISBN é feito de maneira incremental, gostaríamos de retornar os livros mais recentes da biblioteca, para isso, será criado uma view materializada do qual só serão aceitos ISBN maiores que 3. Assim:
+
+[source,sql]
+----
+CREATE MATERIALIZED VIEW IF NOT EXISTS library.recent_book AS
+    SELECT * FROM library.book
+    WHERE isbn > 3 AND name IS NOT NULL
+    PRIMARY KEY (isbn, name);
+
+Warnings : Materialized views are experimental and are not recommended for production use.
+----
+
+Pronto, view materializada criada, agora é possível utilizar essa view para buscar apenas os livros mais recentes.
+
+
+[source,sql]
+----
+cqlsh> SELECT * FROM library.recent_book;
+
+ isbn | name | author
+------+------+--------
+
+INSERT INTO library.book JSON '{"isbn": 4, "name": "Java EE 8 Cookbook", "author": "Elder Moraes"}';
+INSERT INTO library.book JSON '{"isbn": 5, "name": "Best Developer Job Ever!", "author": "Bruno Souza"}';
+
+cqlsh> SELECT * FROM library.recent_book;
+ isbn | name                     | author
+------+--------------------------+--------------
+    4 |       Java EE 8 Cookbook | Elder Moraes
+    5 | Best Developer Job Ever! |  Bruno Souza
+
+----
+
+Também é possível realizar a alteração ou remover a view materializada.
+
+
+[source,sql]
+----
+DROP MATERIALIZED VIEW library.recent_book;
+----
+
+
+WARNINGS: Até o momento o recurso de view materializada se encontra em carater experimental
+
 === Segurança
 
 
+
+Um dos pontos que o Cassandra tem suporte é o recurso de segurança. Assim, é possível definir permissão, criar usuário, cria regras, remover permissão dentre outros. O primeiro ponto para utilizar tais recursos é habilitar o recurso de segurança pelo Cassandra. Para isso, é necessário realizar uma mudança dentro do cassandra.yaml dentro da pasta `conf` na linha `authenticator: AllowAllAuthenticator` realizar a mudança para `authenticator: PasswordAuthenticator`.
+Para habilitar o gerenciamento de permissão do Cassandra também é necessário alterar a linha `authorizer: AllowAllAuthorizer` para `authorizer: CassandraAuthorizer`.
+
+
+Caso esteja utilizando docker a solução seria mapear o arquivo de configuração já definido. Assim:
+
+[source,sql]
+----
+dfg
+----
+
+Feita a habilitação o primeiro passo é acessar o cliente Cassandra novamente, porém, dessa vez teremos uma mensagem de erro:
+
+[source,sql]
+----
+./cqlsh
+Connection error: ('Unable to connect to any servers', {'127.0.0.1': AuthenticationFailed('Remote end requires authentication.',)})
+----
+
+Esse erro acontece porque é necessário ter autorização de acesso, assim, é o superusuário default é `cassandra` e a senha `cassandra`.
+
+[source,sql]
+----
+./cqlsh -u cassandra -p cassandra
+Connected to Test Cluster at 127.0.0.1:9042.
+[cqlsh 5.0.1 | Cassandra 3.11.3 | CQL spec 3.4.4 | Native protocol v4]
+Use HELP for help.
+cassandra@cqlsh>
+----
+
+
+
+Toda a criação foi definida a partir dos ROLES, por exemplo, é possível criar alguns usuários.
+
+.Os usuários ada, alice criados.
+[source,sql]
+----
+CREATE ROLE ada;
+CREATE ROLE alice WITH PASSWORD = 'alice' AND LOGIN = true;
+cqlsh> LIST ROLES;
+ role      | super | login | options
+-----------+-------+-------+---------
+       ada | False | False |        {}
+     alice | False |  True |        {}
+ cassandr
+----
+
+Agora é possível, realizar o login com o usuário alice.
+
+[source,sql]
+----
+./cqlsh -u alice -p alice
+Connected to Test Cluster at 127.0.0.1:9042.
+[cqlsh 5.0.1 | Cassandra 3.11.3 | CQL spec 3.4.4 | Native protocol v4]
+Use HELP for help.
+alice@cqlsh>
+----
+
+Uma vez que o usuário alice não tem permissão de super usuário, não será possível remover campos sensíveis do sistema.
+
+[source,sql]
+----
+alice@cqlsh> DROP KEYSPACE IF EXISTS system_auth;
+Unauthorized: Error from server: code=2100 [Unauthorized] message="Cannot DROP <keyspace system_auth>"
+----
+
+Também é possível alterar a informação de usuário, por exemplo, para fazer com que o usuário alice tenha permissão de superusuário.
+
+[source,sql]
+----
+ALTER ROLE alice WITH SUPERUSER = true;
+
+cassandra@cqlsh> LIST ROLES;
+ role      | super | login | options
+-----------+-------+-------+---------
+       ada | False | False |        {}
+     alice |  True |  True |        {}
+ cassandra |  True |  True |        {}
+
+----
+
+Também é possível remover o usuário:
+[source,sql]
+----
+DROP ROLE ada;
+cassandra@cqlsh> LIST ROLES;
+ role      | super | login | options
+-----------+-------+-------+---------
+     alice |  True |  True |        {}
+ cassandra |  True |  True |        {}
+
+(2 rows)
+
+----
+
+
+Com os usuários criados, agora é possível, por exemplo, criar regras e definir as permissões para cada estrutura dentro do banco de dados. As opções disponíveis são:
+
+* CREATE
+* ALTER
+* DROP
+* SELECT
+* MODIFY
+* AUTHORIZE
+* DESCRIBE
+* EXECUTE
+
+[source,sql]
+----
+grant_permission_statement ::=  GRANT permissions ON resource TO role_name
+permissions                ::=  ALL [ PERMISSIONS ] | permission [ PERMISSION ]
+permission                 ::=  CREATE | ALTER | DROP | SELECT | MODIFY | AUTHORIZE | DESCRIBE | EXECUTE
+resource                   ::=  ALL KEYSPACES
+                               | KEYSPACE keyspace_name
+                               | [ TABLE ] table_name
+                               | ALL ROLES
+                               | ROLE role_name
+                               | ALL FUNCTIONS [ IN KEYSPACE keyspace_name ]
+                               | FUNCTION function_name '(' [ cql_type ( ',' cql_type )* ] ')'
+                               | ALL MBEANS
+                               | ( MBEAN | MBEANS ) string
+----
+
+
+Para elucidar o nosso, faremos um exemplo e mais uma vez utilizando como referência o nosso sistema de livraria. Inicialmente, teremos os seguintes usuários:
+
+* A regra de `user` que apenas pode ler dentro do keyspace biblioteca
+* A regra de `librarian` que pode realizar alterações no keyspace da biblioteca
+* A regra de `manager` que pode criar tabelas dentro do keyspace da biblioteca
+
+Com base nessas regras criaremos:
+
+* ada como usuário
+* mike como bibliotecário
+* jonh como manager
+
+
+[source,sql]
+----
+CREATE KEYSPACE IF NOT EXISTS library  WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
+//create the role user
+CREATE ROLE IF NOT EXISTS user;
+GRANT SELECT ON KEYSPACE library TO user;
+//create user ada
+CREATE ROLE ada WITH PASSWORD = 'ada' AND LOGIN = true;
+GRANT user TO ada;
+//create the role librarian
+CREATE ROLE IF NOT EXISTS librarian;
+GRANT MODIFY ON KEYSPACE library TO librarian;
+GRANT SELECT ON KEYSPACE library TO librarian;
+//create mike
+CREATE ROLE mike WITH PASSWORD = 'mike' AND LOGIN = true;
+GRANT librarian TO mike;
+//create manager
+CREATE ROLE IF NOT EXISTS manager;
+GRANT ALTER ON KEYSPACE library TO manager;
+GRANT CREATE ON KEYSPACE library TO manager;
+//create jonh
+CREATE ROLE jonh WITH PASSWORD = 'jonh' AND LOGIN = true;
+GRANT manager TO jonh;
+----
+
+Pronto com todos os usuários criados o primeiro passo é explorar um pouco da segurança dentro do segurança.
+
+
+[source,sql]
+----
+./cqlsh -u ada -p ada
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.magazine (
+    id text,
+    pages int,
+    PRIMARY KEY (id)
+);
+
+Unauthorized: Error from server: code=2100 [Unauthorized] message="User ada has no CREATE permission on <keyspace library> or any of its parents"
+
+./cqlsh -u jonh -p jonh
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.magazine (
+   id text,
+    pages int,
+    PRIMARY KEY (id)
+);
+
+ ./cqlsh -u mike -p mike
+
+INSERT INTO library.magazine JSON '{"id": "new magazine", "pages": 10}';
+SELECT * FROM library.magazine;
+
+ id           | pages
+--------------+-------
+ new magazine |    10
+
+(1 rows)
+
+./cqlsh -u ada -p ada
+
+SELECT * FROM library.magazine ;
+
+ id           | pages
+--------------+-------
+ new magazine |    10
+
+INSERT INTO library.magazine JSON '{"id": "new magazine", "pages": 10}';
+Unauthorized: Error from server: code=2100 [Unauthorized] message="User ada has no MODIFY permission on <table library.magazine> or any of its parents"
+
+----
