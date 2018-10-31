@@ -204,9 +204,160 @@ cqlsh> SELECT * FROM library.book;
 
 ==== Chave primária
 
+Dentro da família de coluna a chave primária, primary key, é o campo único e todas as famílias de colunas *devem* defini-la. É a partir desse campo que o os dados serão recuperados, por issso, existe uma preocupação inicial com esse campo. A chave primária pode ser constituída por mais de um campo, porém, ela terá um conceito diferente do banco relacional. Ele será dividida em duas partes:
+
+* The *partition key*: É a primeira parte da chave primária. É nesse campo que será definido o hash onde será definido onde os dados serão enviados. Ou seja, valores com o mesmo parition key tendem a ser enviados para os mesmos clusters e é ele que definirá como os dados serão distribuídos através dos clusters.
+* O *clustering columns*: Essa chave tem o poder de definir a ordem dentro da tabela, por exemplo, ao criar uma família de autores definimos o nome como chave e seus livros como ordem.
+
+
+[source,sql]
+----
+CREATE TABLE IF NOT EXISTS library.author (
+    name text,
+    book text,
+    year int,
+    PRIMARY KEY (name, book)
+);
+INSERT INTO library.author  JSON '{"name": "Robert Cecil Martin", "book": "Clean Code", "year": 2008}';
+INSERT INTO library.author  JSON '{"name": "Robert Cecil Martin", "book": "Clean Architecture", "year": 2017}';
+INSERT INTO library.author  JSON '{"name": "Robert Cecil Martin", "book": "Agile Principles, Patterns", "year": 2006}';
+----
+
+Ao executar a query teremos o seguinte resultado:
+
+[source,sql]
+----
+cqlsh> SELECT * FROM library.author;
+
+ name                | book                       | year
+---------------------+----------------------------+------
+ Robert Cecil Martin | Agile Principles, Patterns | 2006
+ Robert Cecil Martin |         Clean Architecture | 2017
+ Robert Cecil Martin |                 Clean Code | 2008
+
+(3 rows)
+----
+
+Uma outra opção é, remover a tabela e criar novamente, dessa vez com a ordem dos livros de maneira decrescente. Assim:
+
+[source,sql]
+----
+CREATE TABLE IF NOT EXISTS library.author (
+    name text,
+    book text,
+    year int,
+    PRIMARY KEY (name, book)
+)
+WITH CLUSTERING ORDER BY (book DESC);
+
+INSERT INTO library.author  JSON '{"name": "Robert Cecil Martin", "book": "Clean Code", "year": 2008}';
+INSERT INTO library.author  JSON '{"name": "Robert Cecil Martin", "book": "Clean Architecture", "year": 2017}';
+INSERT INTO library.author  JSON '{"name": "Robert Cecil Martin", "book": "Agile Principles, Patterns", "year": 2006}';
+----
+
+
+[source,sql]
+----
+cqlsh> SELECT * FROM library.author;
+
+ name                | book                       | year
+---------------------+----------------------------+------
+ Robert Cecil Martin |                 Clean Code | 2008
+ Robert Cecil Martin |         Clean Architecture | 2017
+ Robert Cecil Martin | Agile Principles, Patterns | 2006
+
+(3 rows)
+
+----
+Apenas recapitulando, dentre outros objetivos é a partir da chave é possível realizar a busca das informações, por exemplo, utilizando nossa pequena estrutura de dados de autores:
+
+
+.Realizando a busca a partir da chave, nome do autor do livro.
+[source,sql]
+----
+cqlsh> SELECT book FROM library.author WHERE name = 'Robert Cecil Martin';
+
+ book
+----------------------------
+                 Clean Code
+         Clean Architecture
+ Agile Principles, Patterns
+
+(3 rows)
+----
+
+Caso seja necessário realizar a busca por um campo que não seja a chave, partition key, isso não será possível. Assim, no nosso exemplo, tanto a busca pelo livro e pelo ano dará a mesma mensagem de erro.
+
+.Ao tentar executar a query é retornado um erro, não é possível ler da família de coluna de forma eficiente.
+[source,sql]
+----
+cqlsh> SELECT * FROM library.author WHERE year =2017;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING"
+cqlsh> SELECT * FROM library.author WHERE book  ='Clean Architecture';
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING"
+----
+
+Como mostra a mensagem de erro, a única maneira de executar a query é adicionando o comando `ALLOW FILTERING`, porém, isso terá sérias consequências de performance.
+
+[source,sql]
+----
+cqlsh> SELECT * FROM library.author WHERE year =2017 ALLOW FILTERING;
+ name                | book               | year
+---------------------+--------------------+------
+ Robert Cecil Martin | Clean Architecture | 2017
+(1 rows)
+
+cqlsh> SELECT * FROM library.author WHERE book  ='Clean Architecture' ALLOW FILTERING;
+name                | book               | year
+---------------------+--------------------+------
+ Robert Cecil Martin | Clean Architecture | 2017
+
+(1 rows)
+----
+
+A maneira da qual o cassandra executa esse comando é recuperando todas as linhas e então filtrando por aqueles que não tem o valor da condição. Por exemplo, uma família de colunas que tenha um milhão de linhas e 98% tenha a condição da query, isso será relativamente eficiente. Porém, imagine o caso de que apenas uma linha atenda a condição, ou seja, o Cassandra percorreu de maneira linear e ineficiente 999999 elementos para apenas retornar um.
+
+WARNING: Se uma query é rejeitada pelo Cassandra pedindo o filtro, resita ao uso do `ALLOW FILTERING`. Verifique sua modelagem, seus dados e volumetria e verifique o que você realmente quer fazer.
+
+TIP: Uma segunda opção é o uso de índices secundários que será abordado a seguir.
+
 ==== Tipos estáticos
 
-==== Particion key vs clustering columns
+Algumas colunas podem ser consideradas estáticas dentro da família de coluna. Uma coluna estática é uma coluna que compartilha o mesmo valor para todas as linhas que tenham o mesmo valor de partition key. Por exemplo, imagine o cenário de família de coluna autor (com nome e livro), e agora existe o desejo de se adicionar o campo país de residência. Uma vez que o autor mude de país é importante que todas as suas referências também sejam atualizadas, assim, criaremos o campo país como estático, exibido a seguir:
+
+
+.Criando a estrutura de `author` agora com o campo estático país
+[source,sql]
+----
+CREATE TABLE IF NOT EXISTS library.author (
+    name text,
+    book text,
+    year int,
+    country text static,
+    PRIMARY KEY (name, book)
+);
+INSERT INTO library.author  JSON '{"name": "Robert Cecil Martin", "book": "Clean Architecture", "year": 2017}';
+INSERT INTO library.author  JSON '{"name": "Robert Cecil Martin", "book": "Clean Code", "country": "USA", "year": 2008}';
+INSERT INTO library.author  JSON '{"name": "Joshua Bloch", "book": "Effecive Java", "year": 2001}';
+INSERT INTO library.author  JSON '{"name": "Joshua Bloch", "book": "JAVA PUZZLERS", "year": 2005, "country": "Brazil"}';
+----
+
+.Mesmo inserido uma única vez, ele foi persistido em todos os campos com a mesma chave.
+[source,sql]
+----
+cqlsh> SELECT * FROM library.author;
+
+ name                | book               | country | year
+---------------------+--------------------+---------+------
+        Joshua Bloch |      Effecive Java |  Brazil | 2001
+        Joshua Bloch |      JAVA PUZZLERS |  Brazil | 2005
+ Robert Cecil Martin | Clean Architecture |     USA | 2017
+ Robert Cecil Martin |         Clean Code |     USA | 2008
+
+(4 rows)
+
+----
+
 
 ==== Índice secundário
 
