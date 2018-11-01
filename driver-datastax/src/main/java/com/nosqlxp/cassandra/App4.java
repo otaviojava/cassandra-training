@@ -14,6 +14,7 @@ import com.datastax.driver.core.UserType;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.collect.Sets;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.StreamSupport;
@@ -46,13 +47,19 @@ public class App4 {
 
             Consumer<Row> log = row -> {
                 String name = row.getString("name");
-                UDTValue category = row.getUDTValue("category");
-                category.getLong("isbn");
-                category.getString("name");
-                category.getString("author");
+                Set<UDTValue> books = row.getSet("books", UDTValue.class);
+                Set<String> logBooks = new HashSet<>();
+                for (UDTValue book : books) {
+                    long isbn = book.getLong("isbn");
+                    String bookName = book.getString("name");
+                    String author = book.getString("author");
+                    logBooks.add(String.format(" %d %s %s", isbn, bookName, author));
+                }
+                System.out.println(String.format("The result %s %s", name, logBooks));
             };
 
             findById(session, "OO", log);
+            findById(session, "Good practice", log);
             deleteById(session, "OO");
 
             PreparedStatement prepare = session.prepare("select * from library.category where name = ?");
