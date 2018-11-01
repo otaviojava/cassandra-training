@@ -80,3 +80,8 @@ Com base destes abismos entre paradigmas é muito recorrente que os desenvolvedo
 WARNING: Os mappers são poderosas ferramentas para o desenvolvimento, porém, é importante usar esse grande poder de produtividade com contenção.
 
 === Utilizando o Mapper
+
+
+
+
+Finalmente, foi poder ver e entender uma aplicação Java integrado com o Cassandra. Nesse capítulo foi possível ver a diferença de um framework que realizar a comunicação de baixo nível, semelhante ao JDBC, e um mapper do qual ao mesmo tempo que facilita o desenvolvimento também aumenta a responsabilidade e dobra a atenção para que o desenvolvedor não cometa erros por esquecer que existe uma quebra de paradigma entre a aplicação e o banco de dados.

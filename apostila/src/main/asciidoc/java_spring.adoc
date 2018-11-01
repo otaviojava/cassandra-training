@@ -1,4 +1,31 @@
 
 == Criando um aplicativo com Java com Spring
-=== O que é Spring?
+
+O Spring frameworks é um projeto open source cujo seu objetivo é facilitar o desenvolvimento Java e hoje se tornou umas das ferramentas mais populares em todo o mundo. A sua história se colide muito com a do Java EE uma vez que ele nasceu para preencher a lacuna que o Java EE não conseguia, além de o fazer de uma maneira bastante simples. No seu começou ele era apenas um framework de injeção de dependência, porém, atualmente ele tem diversos subprojetos dentre eles podemos citar:
+
+* Spring Batch
+* Spring Boot
+* Spring security
+* Spring LDAP
+* Spring XD
+* Spring Data
+* E muito mais
+
+
+Nesse capítulo, será apresentado um pouco do mundo Spring integrado com o uso do Cassandra.
+
 === Facilitando o acesso aos dados com Spring Data
+
+
+O Spring data é um dos vários projetos dentro do guarda-chuva do framework, esse sub-projeto tem como maior objetivo facilitar a integração entre Java e os bancos de dados. Existem diversos bancos de dados que são suportados dentro do Spring dentre as suas maiores features são:
+
+Uma grande abstração object-mapping
+O query by method que se baseia na query dinâmica realizada na interface
+Fácil integração com outros projetos dentro do Spring dentre eles o Spring MVC, JavaConfig
+Suporte por auditoria
+
+
+Dentro do Spring Data existe o Spring Data Cassandra que suporte tem suporte a criação de repositórios, suporte a operações síncronas e assíncronas, recursos como query builders e uma altíssima abstração do Cassandra a ponto que se torne dispensável aprender o Cassandra Query Language.
+
+
+O Spring framework é um projeto que trouxe uma grande inovação para o mundo Java, seus recursos e facilitações fazem com que ele seja o mais popular no mundo Java. Dentro da comunicação no banco de dados existe o Spring Data do qual é integrado com o Cassandra do qual existem diversas facilitações a ponto de não ser necessário aprender o Cassandra Query Language.

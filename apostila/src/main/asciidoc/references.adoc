@@ -9,3 +9,4 @@ https://docs.datastax.com/en/cassandra/3.0/cassandra/dml/dmlIndexInternals.html
 https://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling
 http://www.elemarjr.com/pt/2018/02/3-caracteristicas-de-uma-boa-modelagem-para-bancos-nosql-de-documentos/
 https://www.youtube.com/watch?v=FY0BiZaJwL4
+https://spring.io/
