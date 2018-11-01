@@ -56,6 +56,58 @@ Para o próximo passo, iniciaremos a integração com uma framework Java, o noss
 
 O Cassandra é um projeto open source e pertence a Apache fundation, porém, existem diversas empresas que oferecem suporte e serviços ao redor do projeto. A DataStax é uma delas, ela foi fundada pelo Jonathan Ellis umas das pessoas que fez diversas contribuições para o projeto e hoje é Apache Cassandra Chair. A Datastax oferece diversos produtos ao redor do projeto, por exemplo, ferramentas de desenvolvimento, auxiliar o gerenciamento de cluster, drivers de comunicação em diversas linguagens, além de uma solução baseada em Cassandra.
 
+
+=== Esqueleto dos projetos exemplos
+
+Como já foi mencionado, os exemplos serão baseados em cima do Java SE, assim, uma boa maneira de se criar o projeto além de utilizar a IDE é utilizar o maven archetype como quick-start. Para criar o projeto com esse esqueleto basta executar, por exemplo, o seguinte comando:
+
+[source,bash]
+----
+mvn archetype:generate -DgroupId=com.mycompany.app -DartifactId=my-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+----
+
+Um ponto importante é que dentro do pom.xml é importante atualizá-lo para usar com suporte ao Java 8. Assim, o arquivo ficaria da maneira abaixo:
+
+[source,xml]
+----
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.mycompany.app</groupId>
+    <artifactId>my-app</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <name>my-app</name>
+    <url>http://maven.apache.org</url>
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
+----
+
+TIP: Para cada novo projeto uma boa estratégia seria criar um projeto utilizando o mesmo esqueleto.
+
 === Utilizando o driver da DataStax
 
 
