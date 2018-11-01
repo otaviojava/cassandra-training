@@ -2,9 +2,63 @@
 == Modelando sua Aplicação com Cassandra
 
 
+Dentro da ciência de dados a modelagem certamente é um dos pontos mais enigmáticos e mais desafiadores. Um erro nesse ponto, significará impacto de performance tanto na leitura quanto na escrita de informações no banco de dados. No mundo relacional o desenvolver já está acostumado com o conceito de normalização que é um conjunto de regras que visa, principalmente, a organização dentro do banco de dados relacional para evitar a redundância de dados. O ponto é ser discutido é que quando surgiu os bancos relacionais evitar a redundância era um grande desafio uma vez que o preço de armazenamento era algo realmente muito caro. Por exemplo, em 1980 um servidor que armazenava vinte e seis megabytes tinha um custo de quase cinco mil dólares, atualmente, um terabyte custa menos de cinquenta dólares.
+
+.Um HD com 5MB em 1956 fabricado pela IBM. Fonte:  https://thenextweb.com/shareables/2011/12/26/this-is-what-a-5mb-hard-drive-looked-like-is-1956-required-a-forklift/
+image::key-value.png[key-value structure]
+
+A consequência da normalização é que com uma grande complexidade dos dados e a variedade, para manter os dados não duplicados é necessário realizar diversos tipos relações e com essas relações uma busca pode necessitar uma alta quantidade de joins, por consequência um aumento no tempo de resposta dessas queries. O desafio atual se encontra no tempo de resposta e não mais no armazenamento como era anteriormente. O objetivo desse capítulo é demonstrar dicas e motivações para realizar uma modelagem dentro do Cassandra.
+
 === Dicas de Modelagem
-=== Índices secundários
-=== A desnormalização é a sua melhor amiga
-=== Casos Um para N
-=== Casos Um para N
-=== Casos N para N
+
+Diferente dos bancos relacionais do qual se tem as regras de normalização dentro do Cassandra os princípios de modelagem são definidos muito mais pelo contexto da aplicação ou volumetria. Ou seja, um mesmo sistema, por exemplo, de e-commerce pode ser modelado de maneira diferente a depender dos recursos e volumetria de cada um desses bancos. Como a maioria dos desenvolvedores começam com relacional as primeiras dicas serão justamente quais *não* são os objetivos da modelagem com o Cassandra:
+
+* Minimizar o número de escritas: Dentro do Cassandra a escrita é relativamente barata e de maneira eficiente diferente da leitura, assim, se tiver a dica é escrever o máximo possível para facilitar a leitura dos dados que tendem a ser bastante caro.
+* Normalização ou minimizar dados duplicados: Desnormalização e duplicação de dados são as melhores amigas para uma modelagem dentro do Cassandra. Lembrando da dica anterior, a escrita é algo realmente barato, dessa forma, facilitar o máximo possível a leitura é sempre a melhor estratégia, vale salientar, que o Cassandra não tem suporte a `joins`.
+
+
+TIP: Como primeira dica para modelagem no Cassandra, não tente emular ou simular de alguma maneira os bancos relacionais dentro do Cassandra. O resultado será semelhante a usar um garfo como faca.
+
+Com base nessas primeiras dicas se pode resumir as dicas de modelagem do Cassandra em dois grandes grupos:
+
+* Compartilhar os dados por todos os clusters: Um ponto importante é que os dados são compartilhados pelos nós através do hash da partition key, ou seja, a escolha desse campo é essencial.
+Seja um sniper na query: No mundo ideal, a query perfeita é aquela feita a partir de uma única busca que é feita pela chave primária, partition key. Diversas buscas pelo particion key resulta em diversas consultas em diferentes clusters.
+
+WARNING: Diferente dos bancos relacionais sua modelagem será a partir das queries ao invés da normalização.
+
+Um bom primeiro passo para começar a modelagem é saber quais queries a aplicação precisa. Assim, salientando, criar famílias de colunas que satisfaça aquela requisição apenas numa query é o grande objetivo.
+
+==== Casos Um para N
+
+
+
+Imagine o seguinte cenário:
+Cada livro (ISBN, nome e ano) tem o seu autor (nome, país, mini-bio).
+
+A primeira pergunta para a modelagem:
+Quais queries queremos suportar?
+Para esse caso, gostaríamos de buscar os livros a partir do ISBN, desta maneira, a nossa relação um por um se baseará no autor ser um tipo, uma vez que nesse caso não existe motivo para que ser exista uma família de coluna para autores. Dessa forma:
+
+
+No cenário é possível ver o impacto na duplicação das informações, no caso dos autores, porém, a mudança de nome e nacionalidade de um autor tende a ser algo extremamente raro.
+
+==== Casos N para N
+
+
+
+==== Caso prático
+
+
+=== Uso de índices no Cassandra
+
+Por padrão, as queries de consultas são realizadas a partir da partition key, uma vez que é por essa chave é gerada o hash e será direcionado qual cluster tem a informação mais recentes. Existem dois recursos que podem ser utilizados para buscar as informações por campos não chave.
+
+A primeira delas é utilizando o índice secundário, esse recurso faz com que o campo tenha a possibilidade de leitura de um campo. Porém, essa escolha traz impacto para a busca, considerando que no uso de índice a query é feita em todos os clusters a melhor analogia é tentar acertar diversos alvos, porém, com uma arma de precisão. Em algumas documentações o uso desse tipo de índice é considerado um ant-pattern dentro do Cassandra, dessa maneira, no mundo perfeito sua modelagem não necessita dela. Porém, caso não tenha outra opção segue algumas regras para minimizar o impacto:
+
+* *Não* utilizar quando existe um alto grau de cardinalidade
+* *Não* utilizar em campos que são atualizados com uma alta frequência
+
+A outra maneira é o uso de `ALLOW FILTERING`, ele permite a busca por qualquer campo com um altíssimo impacto em performance. Numa query o que ele fez é fazer uma busca de forma linear todos os campos, ou seja, dado uma base de um bilhão de dados eles varrerá todos os bilhões de dados sem nenhuma otimização nessa busca. Utilizar query com `ALLOW FILTERING` é altíssimo indicador de `code smell` na sua modelagem, dessa forma, o retorno para a prancheta da modelagem seria a melhor recomendação.
+
+TIP: O Maior objetivo dessa parte é que você deve evitar ao máximo o uso de índices no Cassandra.
+
