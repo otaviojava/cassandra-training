@@ -7,23 +7,25 @@ import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
 import com.datastax.driver.mapping.Result;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.stream.StreamSupport;
 
 /**
  * Hello world!
  */
-public class App {
+public class App6 {
 
-    private static final String KEYSPACE = "library";
-    private static final String COLUMN_FAMILY = "book";
-
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         try (Cluster cluster = Cluster.builder().addContactPoint("127.0.0.1").build()) {
 
             Session session = cluster.connect();
             MappingManager manager = new MappingManager(session);
             Mapper<Book> mapper = manager.mapper(Book.class);
+            BookRepository bookRepository = manager.createAccessor(BookRepository.class);
 
 
             Book cleanCode = getBook(1L, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO"));
@@ -36,13 +38,20 @@ public class App {
             mapper.save(effectiveJava);
             mapper.save(nosql);
 
-            Result<Book> books = mapper.map(session.execute(QueryBuilder.select().from(KEYSPACE, COLUMN_FAMILY)));
-            for (Book book : books) {
-                System.out.println("The result: " + book);
-            }
+            Result<Book> all = bookRepository.getAll();
+            StreamSupport.stream(all.spliterator(), false).forEach(System.out::println);
+
+            Book book = bookRepository.findById(1L);
+            Book book2 = bookRepository.findById(2L);
+            System.out.println(book);
+
+            System.out.println(book2);
+
+
         }
 
     }
+
 
     private static Book getBook(long isbn, String name, String author, Set<String> categories) {
         Book book = new Book();
