@@ -5,7 +5,7 @@
 Dentro da ciência de dados a modelagem certamente é um dos pontos mais enigmáticos e mais desafiadores. Um erro nesse ponto, significará impacto de performance tanto na leitura quanto na escrita de informações no banco de dados. No mundo relacional o desenvolver já está acostumado com o conceito de normalização que é um conjunto de regras que visa, principalmente, a organização dentro do banco de dados relacional para evitar a redundância de dados. O ponto é ser discutido é que quando surgiu os bancos relacionais evitar a redundância era um grande desafio uma vez que o preço de armazenamento era algo realmente muito caro. Por exemplo, em 1980 um servidor que armazenava vinte e seis megabytes tinha um custo de quase cinco mil dólares, atualmente, um terabyte custa menos de cinquenta dólares.
 
 .Um HD com 5MB em 1956 fabricado pela IBM. Fonte:  https://thenextweb.com/shareables/2011/12/26/this-is-what-a-5mb-hard-drive-looked-like-is-1956-required-a-forklift/
-image::key-value.png[key-value structure]
+image::ibm_history_server.png[IBM server]
 
 A consequência da normalização é que com uma grande complexidade dos dados e a variedade, para manter os dados não duplicados é necessário realizar diversos tipos relações e com essas relações uma busca pode necessitar uma alta quantidade de joins, por consequência um aumento no tempo de resposta dessas queries. O desafio atual se encontra no tempo de resposta e não mais no armazenamento como era anteriormente. O objetivo desse capítulo é demonstrar dicas e motivações para realizar uma modelagem dentro do Cassandra.
 
@@ -28,25 +28,296 @@ WARNING: Diferente dos bancos relacionais sua modelagem será a partir das queri
 
 Um bom primeiro passo para começar a modelagem é saber quais queries a aplicação precisa. Assim, salientando, criar famílias de colunas que satisfaça aquela requisição apenas numa query é o grande objetivo.
 
-==== Casos Um para N
+==== Casos Um para Um
 
 
 
 Imagine o seguinte cenário:
-Cada livro (ISBN, nome e ano) tem o seu autor (nome, país, mini-bio).
+Cada livro (ISBN, nome e ano) tem o seu autor (nome e país).
 
 A primeira pergunta para a modelagem:
 Quais queries queremos suportar?
 Para esse caso, gostaríamos de buscar os livros a partir do ISBN, desta maneira, a nossa relação um por um se baseará no autor ser um tipo, uma vez que nesse caso não existe motivo para que ser exista uma família de coluna para autores. Dessa forma:
 
+[source,sql]
+----
+CREATE KEYSPACE IF NOT EXISTS library  WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
+
+DROP COLUMNFAMILY IF EXISTS library.book;
+DROP TYPE IF EXISTS library.author;
+
+CREATE TYPE IF NOT EXISTS library.author (
+    name text,
+    country text
+);
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.book (
+    isbn bigint,
+    name text,
+    year int,
+    author author,
+    PRIMARY KEY (isbn)
+);
+----
 
 No cenário é possível ver o impacto na duplicação das informações, no caso dos autores, porém, a mudança de nome e nacionalidade de um autor tende a ser algo extremamente raro.
 
+[source,sql]
+----
+INSERT INTO library.book (isbn, name, year, author) values (1,'Clean Code', 2008, {name: 'Robert Cecil Martin', country: 'USA'});
+INSERT INTO library.book (isbn, name, year, author) values (2,'Clean Architecture', 2017, {name: 'Robert Cecil Martin', country: 'USA'});
+INSERT INTO library.book (isbn, name, year, author) values (3,'Agile Principles, Patterns, and Practices in C#', 2002, {name: 'Robert Cecil Martin', country: 'USA'});
+INSERT INTO library.book (isbn, name, year, author) values (4,'Java EE 8 Cookbook', 2018, {name: 'Elder Moraes', country: 'Brazil'});
+INSERT INTO library.book (isbn, name, year, author) values (5,'Effective Java', 2001, {name: 'Joshua Bloch', country: 'USA'});
+INSERT INTO library.book (isbn, name, year, author) values (6,'Java Puzzlers: Traps, Pitfalls, and Corner Cases', 2005, {name: 'Joshua Bloch', country: 'USA'});
+----
+
+
+==== Casos um para N
+
+Seguindo com o exemplo anterior, relação livro autor, esse exemplo ampliará o número de autores, afinal, existem livros que possuem mais de um escritor. Com isso existirá uma relação de um livro para N autores.
+
+[source,sql]
+----
+CREATE KEYSPACE IF NOT EXISTS library  WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
+
+DROP COLUMNFAMILY IF EXISTS library.book;
+DROP TYPE IF EXISTS library.author;
+
+CREATE TYPE IF NOT EXISTS library.author (
+    name text,
+    country text
+);
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.book (
+    isbn bigint,
+    name text,
+    year int,
+    authors set<frozen<author>>,
+    PRIMARY KEY (isbn)
+);
+----
+
+
+O impacto segue semelhante ao anterior, um alto grau de dados duplicados.
+
+
+[source,sql]
+----
+INSERT INTO library.book (isbn, name, year, authors) values (1,'Design Patterns: Elements of Reusable Object-Oriented Software', 1994,
+{{name: 'Erich Gamma', country: 'Switzerland'}, {name: 'John Vlissides', country: 'USA'}});
+INSERT INTO library.book (isbn, name, year, authors) values (2,'The Pragmatic Programmer', 1999,
+{{name: 'Andy Hunt', country: 'Switzerland'}, {name: 'Dave Thomas', country: 'England'}});
+----
+
 ==== Casos N para N
 
+Para o último exemplo, o objetivo é criar um caso do qual numa base relacional seria utilizado uma relação N para N. Seguindo a linha de biblioteca é possível pensar na relação entre revistas e artigos porque uma revista possui N artigos da mesma forma que um artigo pode estar em N revistas. Indiferente disso, no Cassandra a pergunta é a mesma: Quais queries o banco de dados deseja suportar? Nesse cenário existirão duas:
+
+* Buscar a revista pelo ISSN
+* Buscar o artigo pelo título
+
+
+[source,sql]
+----
+CREATE KEYSPACE IF NOT EXISTS library  WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
+
+DROP COLUMNFAMILY IF EXISTS library.magazine;
+DROP COLUMNFAMILY IF EXISTS library.article;
+DROP TYPE IF EXISTS library.author;
+DROP TYPE IF EXISTS library.magazine;
+DROP TYPE IF EXISTS library.article;
+
+CREATE TYPE IF NOT EXISTS library.author (
+    name text,
+    country text
+);
+
+CREATE TYPE IF NOT EXISTS library.magazine (
+    issn bigint,
+    name text,
+    year int,
+    author frozen<author>
+);
+
+CREATE TYPE IF NOT EXISTS library.article (
+    name text,
+    year int,
+    author frozen<author>
+);
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.magazine (
+   issn bigint,
+   name text,
+   editor author,
+   articles set<frozen<article>>,
+   PRIMARY KEY (issn)
+);
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.article (
+   title text,
+   year int,
+   author author,
+   magazines set<frozen<magazine>>,
+   PRIMARY KEY (title, year)
+);
+----
+
+
+Nesse caso é bastante simples uma vez ambas as entidades, revistas e artigos, uma vez criados não necessitam realizar alteração, com exceção da família de coluna artigo que precisa adicionar sempre uma nova referência de revistas onde o artigo foi postado.
+
+[source,sql]
+----
+INSERT INTO library.magazine (issn, name, editor, articles) values (1, 'Java Magazine', {name: 'Java Editor', country: 'USA'}, {{name: 'Jakarta EE', year: 2018, author: {name: 'Elder Moraes', country: 'Brazil'}},
+{name: 'Cloud and Docker', year: 2018, author: {name: 'Bruno Souza', country: 'Brazil'}}});
+----
 
 
 ==== Caso prático
+
+Definindo pequenos exemplos, o próximo passo é criar um exemplo maior e demonstrar o seu uso com o Cassandra. Imagine os usuários da biblioteca, o nosso objetivo é cadastrá-lo dentro de uma base Cassandra.
+
+A primeira pergunta para a modelagem: Quais queries é importante suportar?
+Para esse caso, vamos dizer que é importante que seja possível buscar o usuário tanto pelo nickname, quanto pelo e-mail cadastrado.
+
+[source,sql]
+----
+DROP COLUMNFAMILY IF EXISTS library.user_by_nickname;
+DROP COLUMNFAMILY IF EXISTS library.user_by_email;
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.user_by_nickname (
+    nickname text PRIMARY KEY,
+    email text,
+    age int
+);
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.user_by_email (
+    email text PRIMARY KEY,
+    nickname text,
+    age int
+);
+----
+
+Tão logo foi atingido a primeira condição da modelagem, o próximo passo é verificar se os dados estão espelhados de maneira consistente entre os nós e se é possível buscar as informações necessárias com apenas uma única chave para os dois casos conseguimos atingir a modelagem.
+
+Um erro muito comum na modelagem do Cassandra é evitar duplicação e utilizar ao máximo a normalização, por exemplo:
+
+[source,sql]
+----
+DROP COLUMNFAMILY IF EXISTS library.user;
+DROP COLUMNFAMILY IF EXISTS library.user_by_nickname;
+DROP COLUMNFAMILY IF EXISTS library.user_by_email;
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.user (
+        id uuid PRIMARY KEY,
+        nickname text,
+        email text,
+        age int
+);
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.user_by_nickname (
+        username text PRIMARY KEY,
+        id uuid
+);
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.user_by_email (
+         email text PRIMARY KEY,
+         id uuid
+);
+----
+
+Essa estratégia permite com que os dados sejam espalhados entre os nós, porém, para realizar a leitura da informação o desenvolvedor terá que fazer duas queries: Uma para família de coluna de mapeamento, users_by_nickname ou users_by_email, e em seguida na família de coluna dos usuários.
+
+TIP: Resista ao máximo a tentação de normalização e práticas do mundo SQL dentro do Cassandra.
+
+Evoluindo um pouco mais o projeto, imagine que será necessário a criação de perfils de usuário. Por exemplo, existem usuários da biblioteca que leem mais livros de tecnologias ou de história e assim por diante. Nesse caso só queremos saber o grupo e o nickname dos usuários que se encontram nesse perfil:
+
+[source,sql]
+----
+DROP COLUMNFAMILY IF EXISTS library.profile;
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.profile (
+    profile_name text,
+    nickname text,
+    email text,
+    age int,
+    PRIMARY KEY (profile_name, nickname)
+);
+----
+
+WARNING: Uma possibilidade na criação dessa modelagem seria utilizar os UDT uma vez que não necessitamos recuperar os campos separadamente. Em teoria a leitura/escrita de UDT tende a ser mais rápida que a leitura/escrita de múltiplos campos.
+
+
+Com essa modelagem é possível atender o requisito de realizar a query, também é possível buscar as informações desejadas com uma única query, porém, temos um problema com um ponto que são as distribuições entre os clusters. Como a partition key é nome do profile é possível que exista milhões de usuários para um único profile, por exemplo, um milhão de usuários para o profile de leitura de romance. Nesse caso enfrentamos um trade-off, existe a possibilidade de se desfrutar de truques para distribuir os dados entre os clusters, por exemplo, adicionando um hash ou prefixo dentro do nome (‘romance’, ‘romance_1’, ‘romance_2’), porém, retornamos o problema de realizar mais de uma query para retornar a informação. Assim, é necessário entender qual regra é melhor quebrar.
+
+Pensando no caso da normalização, também é possível criar uma modelagem a ponto de que se evite a duplicação dos dados:
+
+[source,sql]
+----
+DROP COLUMNFAMILY IF EXISTS library.user;
+DROP COLUMNFAMILY IF EXISTS library.profile;
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.user (
+    id uuid PRIMARY KEY,
+    nickname text,
+    email text,
+    age int
+);
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.profile (
+    groupname text,
+    user_id uuid,
+    PRIMARY KEY (groupname, user_id)
+);
+----
+
+O ponto é quantas buscas serão necessárias para realizar, por exemplo, um perfil que tenha um milhão de usuários terá que fazer um milhão e uma vezes requisições para atender a query.
+
+No último passo da modelagem, gostaríamos de fornecer suporte para exibir os novos membros do perfil. Assim, por exemplo, será possível recomendar livros para o novato se enturmar com o resto do time, dessa maneira, gostaríamos que ao buscar o perfil também seja possível saber quais são os usuários mais recentes.
+
+
+[source,sql]
+----
+DROP COLUMNFAMILY IF EXISTS library.profile_entrance;
+DROP TYPE IF EXISTS library.user;
+
+CREATE TYPE IF NOT EXISTS library.user (
+    nickname text,
+    email text,
+    age int,
+);
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.profile_entrance (
+    name text,
+    joined timeuuid,
+    user user,
+    PRIMARY KEY (name, joined)
+);
+----
+
+
+Utilizando essa estratégia é possível realizar a ordem os usuários executando uma query como `SELECT * FROM library.profile_entrance where name = 'romance' ORDER BY joined DESC LIMIT 3;` para retornar os três mais recentes membros do perfil, mas podemos deixar essa query ainda mais eficiente. Caso queríamos retornar os membros mais recentes o que podemos fazer é simplesmente retornar a ordem do campo.
+
+[source,sql]
+----
+DROP COLUMNFAMILY IF EXISTS library.profile_entrance;
+DROP TYPE IF EXISTS library.user;
+
+CREATE TYPE IF NOT EXISTS library.user (
+    nickname text,
+    email text,
+    age int,
+);
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.profile_entrance (
+    name text,
+    joined timeuuid,
+    user user,
+    PRIMARY KEY (name, joined)
+) WITH CLUSTERING ORDER BY (joined DESC);
+----
+Dessa forma a query será reduziada apenas para `SELECT * FROM library.profile_entrance where name = 'romance' LIMIT 3;` sem falar na eficiência.
+
 
 
 === Uso de índices no Cassandra
@@ -62,3 +333,5 @@ A outra maneira é o uso de `ALLOW FILTERING`, ele permite a busca por qualquer 
 
 TIP: O Maior objetivo dessa parte é que você deve evitar ao máximo o uso de índices no Cassandra.
 
+
+Com isso foram apresentados os conceitos de modelagem dentro de um banco de dados Cassandra demonstrando como ele é diferente de uma base de dados relacional. O seu core conceito é justamente escrever ao máximo, uma vez que tende a ser uma operação barata, para justamente diminuir o número de operações na leitura no mundo ideal é possível criar queries e consultas sem o uso de índices seja ele como secundário ou com o recurso de `ALLOW FILTERING`, porém, existirá um trabalho gigantesco para gerenciar a duplicação de dados que existirá.
