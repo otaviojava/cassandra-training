@@ -111,6 +111,10 @@ TIP: Para cada novo projeto uma boa estratégia seria criar um projeto utilizand
 === Utilizando o driver da DataStax
 
 
+
+
+TIP: Para facilitar não ativaremos a segurança e estaremos baseado numa instalação local ou com o Docker com o seguinte comando `docker run -d --name casandra-instance -p 9042:9042 cassandra`
+
 === OxM vs ORM
 
 Após o exemplo utilizando o código driver a pergunta mais frequente que o desenvolvedor realiza é:

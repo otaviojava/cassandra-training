@@ -1,6 +1,8 @@
 package com.nosqlxp.cassandra;
 
+import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -9,11 +11,13 @@ import com.google.common.collect.Sets;
 
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Hello world!
  */
-public class App {
+public class App2 {
 
     private static final String KEYSPACE = "library";
     private static final String COLUMN_FAMILY = "book";
@@ -35,17 +39,37 @@ public class App {
             session.execute(QueryBuilder.insertInto(KEYSPACE, COLUMN_FAMILY).values(NAMES, nosql));
             session.execute(QueryBuilder.insertInto(KEYSPACE, COLUMN_FAMILY).values(NAMES, cleanCode));
 
-            ResultSet resultSet = session.execute(QueryBuilder.select().from(KEYSPACE, COLUMN_FAMILY));
-            for (Row row : resultSet) {
+            Consumer<Row> log = row -> {
                 Long isbn = row.getLong("isbn");
                 String name = row.getString("name");
                 String author = row.getString("author");
                 Set<String> categories = row.getSet("categories", String.class);
                 System.out.println(String.format(" the result is %s %s %s %s", isbn, name, author, categories));
-            }
+            };
+
+            findById(session,1L, log);
+
+            deleteById(session, 1L);
+
+            PreparedStatement prepare = session.prepare("select * from library.book where isbn = ?");
+            BoundStatement statement = prepare.bind(2L);
+            ResultSet resultSet = session.execute(statement);
+            StreamSupport.stream(resultSet.spliterator(), false).forEach(log);
+
+
         }
 
 
+    }
+
+    private static void deleteById(Session session, Long isbn) {
+        session.execute(QueryBuilder.delete().from(KEYSPACE, COLUMN_FAMILY).where(QueryBuilder.eq("isbn", isbn)));
+
+    }
+
+    private static void findById(Session session, long isbn, Consumer<Row> log) {
+        ResultSet resultSet = session.execute(QueryBuilder.select().from(KEYSPACE, COLUMN_FAMILY).where(QueryBuilder.eq("isbn", isbn)));
+        StreamSupport.stream(resultSet.spliterator(), false).forEach(log);
     }
 
 }
