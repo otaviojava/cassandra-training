@@ -1,7 +1,49 @@
 
 == Criando um aplicativo com [.line-through]#Java EE# Jakarta EE
 
+Um dos grandes diferenciais dentro do mundo Java são as especificações. Essas especificações são regidas pelo órgão, JCP, cujo o foco é garantir uma comunicação transparante, uma forte participação entre os grupos de usuários Java, participação individual, empresas e tudo que rege a comunidade Java ao redor do mundo. Além da comunidade existem diversos benefícios técnicos, por exemplo, a possibilidade de se desfrutar do multi-vendors, evitando ficar preso num único fornecedor (o conceito de vendor lock-in) e compromisso com a retrocompatibilidade uma fica documentação realizada por diversas empresas dentre outros benefícios. O objetivo desse capítulo é falar um pouco sobre um dos frutos desse órgão: o Java EE e sua solução para o mundo não relacional.
+
+Dentro do mundo de especificações Java, modificação realizada pelo JCP é feita a partir de um pedido de especificação Java, uma JSR, que possui todo o seu ciclo de vida e que pode ser submetido por qualquer pessoa (seja representando uma empresa, uma comunidade ou a si próprio). Cada JSR, por sua vez, no final do ciclo precisa basicamente gerar três produtos e são eles:
+
+* Uma API: uma camada de código geralmente tomada por interfaces e classes implementáveis.
+* Uma RI: A implementação de referência de uma especificação, ela serve como modelo para caso alguém aspire implementar tal especificação.
+* Um TCK: O Kit de teste por compatibilidade nada mais é que um conjunto de testes que garantem, caso a implementação passe por todos eles, que essa implementação está funcionando de acordo o esperado. Imagine o TCK como o selo de garantia.
+
+No mundo Java podemos ver diversos exemplos como esse como o JPA, a API, e tem o Hibernate como implementação de referência (das versões mais recentes do JPA), além de ter Eclipse Top Link, Apache JPA como exemplos de implementação.
+
+Dentre os diversos tipos de especificações, existe possui diversas especificações dentro, sim você entendeu corretamente uma JSR que contém muitas JSRs, elas são conhecidas como guarda-chuva de especificação ou plataforma das quais podemos citar o Java SE e o Java EE.
 
 === O que é Jakarta EE?
-=== Java EE vs Jakarta EE
+
+Uma das grandes mudanças no mundo Java EE é que em 2017 ele foi doado para a Eclipse Foundation pela Oracle. Ou seja, a partir daquela época se iniciou a transição ou passagem de basta da responsabilidade para a Eclipse Foundation. Assim, a Oracle não é mais responsável pela especificação Java EE todo esse trabalho será mantido pela Foundation. Um ponto importante a salientar é informação o que foi transferido:
+
+* Código que pertence as APIs
+* As documentações
+* As implementações de referências que pertenciam a Oracle (Vale lembrar que existem especificações que não são gerenciadas pela Oracle é o caso do Bean Validation e o CDI)
+
+Porém, não foi entregue o direito do nome Java, dessa forma, não era possível continuar se chamando “Java EE”. Com isso, foi realizado uma votação por dentro da comunidade e eles elegeram o novo nome: `Jakara EE` além do novo logo.
+Assim, de uma maneira geral o Jakarta EE é apenas a nova casa da plataforma Java EE.
+
+.A nova logo do [.line-through]#Java EE# Jakarta EE
+image::jakartaee.png[Logo do Jakarta EE]
+
+
+Como premissa o Jakarta EE, sob nova direção com Eclipse Foundation, manterá compatibilidade com a última versão do Java EE, a versão 8, além de trazer novidades para dentro da plataforma. Um dos pontos importantes é que para trazer mais novidades para a plataforma está sendo criado um novo ciclo para espeficicação, no local das JSRs, cujo o seu principal foco é facilitar o desenvolvimento, realizar entregas rápidas e receber feedbacks de maneiras mais rápidas da comunidade. Como primeira especificação nasceu o Eclipse JNoSQL cujo o seu foco é realizar integração entre os bancos nosql e Java.
+
+IMPORTANT: A ideia da nova especificação é ser criada como um ciclo rápidos de entregas inspirados em metodologias ágeis do qual existe um projeto que foi pioneiro da fundação, o Eclipse Microprofile que tem o foco em dar flexibilidade no [.line-through]#Java EE# Jakarta EE para a era de microsserviços.
+
 === Utilizando Eclipse JNoSQL, a primeira espeficicação do Jakarta EE
+
+O Eclipse JNoSQL é um framework que realiza a integração entre as aplicações Java com bancos de dados NoSQL. Ele define um grupo de APIs cujo objetivo é padronizar a comunicação entre a maioria dos bancos de dados e suas operações comuns. Isso ajuda a diminuir o acoplamento com este tipo de tecnologia utilizada nas aplicações atuais.
+O projeto tem duas camadas:
+
+1. Camada de comunicação: É um grupo de APIs que define a comunicação com os bancos de dados não relacionais. Comparado com os tradicionais bancos não relacionais, eles são semelhantes as APIs JDBC. Ele contém quatro módulos, um para cada tipo de banco NoSQL: chave-valor, família de coluna, documento e grafos. Sendo que a API grafo não é nova, será utilizada o Apache TinkerPop.
+2. Camada de mapeamento: API que ajuda o desenvolvedor na integração com o banco não relacional, sendo orientada a anotações e utiliza tecnologias como injeção de dependências e Bean Validation, deixando simples para os desenvolvedores a utilizarem. Comparando com os clássicos RDBMS, essa camada pode ser comparada com o JPA ou outros frameworks de mapeamentos como o Hibernate.
+
+.Arquitetura do Eclipse JNoSQL
+image::jnosql.png[Funcionamento do JNoSQL]
+
+
+
+
+Com uma nova casa e de forma ainda mais vibrante, nasce o projeto Eclipse JNoSQL sob nova direção do Jakarta EE com a Eclipse Foundation. O Eclipse JNoSQL tem como propósito facilitar a integração entre Java e NoSQL com a estratégia de dividir a camada de comunicação e mapeamento, atualmente, ele suporta mais de trinta bancos de dados. Muitas melhorias são esperadas pela comunidade, porém, o grande benefício da plataforma é que ela é totalmente orientada a comunidade, ou seja, o leitor pode sair da cadeira e ajudar tanto o Jakarta EE e o Eclipse JNoSQL agora mesmo.
