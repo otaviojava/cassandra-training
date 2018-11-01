@@ -10,10 +10,73 @@ Para executar todas as demonstrações é necessário que assim como o Cassandra
 
 WARNING: Para seguir lendo as cenas dos próximos capítulos da novela Cassandra é importante que tenha a última atualização do Java 8, maven superior a 3.5.3 e uma IDE que suporte ambos.
 
+Para facilitar a comparação entre as ferramentas de integração com Java será utilizado exatamente o mesmo exemplo. Um outro ponto, com o intuito de diminuir a complexidade e não desviar o foco, os exemplos serão baseados apenas em Java SE, ou seja, executando puramente o bom e velho `public static void main(String[])`. O nosso exemplo será baseado no mesmo caso de uma livraria:
+
+Teremos uma biblioteca do qual terá livros e cada livro terá autor e cada livro tem uma categoria. As consultas desejadas são:
+
+* Buscar o livro a partir do ISBN
+* Buscar os livros a partir da respectativa categoria
+
+
+Pesando de uma maneira simples a modelagem que atenda todas as queries e distribua as informações:
+
+[source,sql]
+----
+CREATE KEYSPACE IF NOT EXISTS library  WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
+DROP COLUMNFAMILY IF EXISTS library.book;
+DROP COLUMNFAMILY IF EXISTS library.category;
+DROP TYPE IF EXISTS library.book;
+
+CREATE TYPE IF NOT EXISTS library.book (
+    isbn bigint,
+    name text,
+    author text,
+    categories set<text>
+);
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.book (
+    isbn bigint,
+    name text,
+    author text,
+    categories set<text>,
+    PRIMARY KEY (isbn)
+);
+
+
+CREATE COLUMNFAMILY IF NOT EXISTS library.category (
+  name text PRIMARY KEY,
+  books set<frozen<book>>
+);
+----
+
 === O que é DataStax?
-=== Requisitos para o código
+
+
+Para o próximo passo, iniciaremos a integração com uma framework Java, o nosso primeiro será o driver de comunicação da DataStax. O que ele faz é ter um comportamento muito semelhante ao JDBC no mundo Java, ou seja, esse driver faz a comunicação com baixo nível, isso quer dizer, por exemplo, que isso requer uma grande quantidade de código para realizar a conversão entre uma entidade de negócio e a comunicação com o Cassandra.
+
+O Cassandra é um projeto open source e pertence a Apache fundation, porém, existem diversas empresas que oferecem suporte e serviços ao redor do projeto. A DataStax é uma delas, ela foi fundada pelo Jonathan Ellis umas das pessoas que fez diversas contribuições para o projeto e hoje é Apache Cassandra Chair. A Datastax oferece diversos produtos ao redor do projeto, por exemplo, ferramentas de desenvolvimento, auxiliar o gerenciamento de cluster, drivers de comunicação em diversas linguagens, além de uma solução baseada em Cassandra.
+
 === Utilizando o driver da DataStax
+
+
 === Exemplo
+
 === OxM vs ORM
-==== Qual o problema quando se utiliza o OxM?
+
+Após o exemplo utilizando o código driver a pergunta mais frequente que o desenvolvedor realiza é:
+
+Como tornar isso mais simples para as entidades de negócio?
+
+Como programadores temos ciência que apesar do banco de dados trabalhar com estrutura de dados família de coluna é muito comum que o aplicativo como e-commerce, sistema de hospitais, etc. Trabalhem com orientação a objeto. No mundo relacional existe um tipo de framework que cobre essa lacuna que são os **ORM**s (Object-relational mapping) cujo o objetivo é fazer o mapeamento entre o objeto e os bancos relacionais. No mundo dos bancos não relacionais não existe um termo específico para esse tipo de framework, que o sabemos que é o termo ORM não se encaixa uma vez que o *R* se refere aos bancos relacionais. Um conceito que vem cada vez se familirizando é o OxM quem que *x* é qualquer tipo de banco de dados não relacional, ou seja, OxM é um Object-Mapper para qualquer tipo de bancos de dados NoSQL ou simplesmente de mapper.
+
+Esse tipo de ferramenta facilita muito a vida e gera bastante produtividade no mundo de engenharia de software, porém, como qualquer tecnologia pode trazer alguns problemas. O conceito do Object-relational impedance mismatch é desafio encontrado quando se trabalha com mapper dentro de um banco relacional. O fato é que existe uma quebra de paradigma entre o banco relacional e a orientação objetos e como consequência desentendimento entre tais:
+
+Encapsulamento: Um bom design de orientação objeto faz com que os dados sejam bem escondidos, existem diversas citações de boas práticas em livros consagrados, por exemplo, o Clean code que fala que a principal diferença entre estrutura de dados e orientação a objetos é que no segundo expõe o comportamento e esconde os dados. Porém, esse tipo de conceito não existe no relacional.
+
+Herança vs interfaces vs polimorfismo: Apesar de existir diversos bancos de dados que tenham suporte para herança, até o momento que escrevo não existe suporte a recursos como interfaces e polimorfismo. Dentro do aplicativo para escrever um código limpo utilizam recursos como herança e polimorfismos com uma grande frequência.
+
+Com base destes abismos entre paradigmas é muito recorrente que os desenvolvedores em alguns momentos esqueçam que apesar do mapper o banco de dados não é orientado a objetos fazendo com que exista um alto impacto de performance nas aplicações. É muito frequente a referência de que um mapper e um ORM é considerado um anti-pattern e o motivo é simples: é um grande poder que muitos desenvolvedores não utilizam com responsabilidade. Existem maneiras para minimizar esse impacto, dentre eles, começar com a modelagem e para ter uma orientação objeto uma camada entre a estrutura de dados o domínio.
+
+WARNING: Os mappers são poderosas ferramentas para o desenvolvimento, porém, é importante usar esse grande poder de produtividade com contenção.
+
 === Utilizando o Mapper
