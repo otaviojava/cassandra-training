@@ -1,5 +1,15 @@
 
-== Criando um aplicativo com Java com DataStax
+== Realizando integração com Java
+
+Após toda a teoria, instalação, noção de comunicação com CQL e modelagem finalmente está na hora de juntar tudo isso e colocar dentro de uma aplicação Java. A integração do banco de dados com a linguagem é uma das coisas mais importantes a serem realizadas dentro de uma aplicação e é esse o objetivo dessa capítulo. Ele será dividido com uma comunicação de baixo nível e em seguida se falará de frameworks que abstrai toda essa comunicação além dos seus possíveis impactos na aplicação.
+
+=== Requísitos mínimos para as demonstrações
+
+Para executar todas as demonstrações é necessário que assim como o Cassandra se tenha instalado o Java 8 além do maven superior a versão 3.5.3. No momento que eu escreto o Java se encontra na versão 11, porém, poucos frameworks têm suporte para o uso do mesmo, dessa forma para manter coerência e facilitar o gerenciamento das variáveis de ambiente será utilizado a última versão do Java 8. Como o objetivo do livro é falar sobre o Cassandra será considerado que o leitor tenha noção de Java 8 e maven além de ter os dois instalados e devidamente configurados no sistema operacional favorito além de utilizar qualquer IDE que o leitor se sinta confortável, desde que suporte tanto o uso de maven quanto Java 8.
+
+
+WARNING: Para seguir lendo as cenas dos próximos capítulos da novela Cassandra é importante que tenha a última atualização do Java 8, maven superior a 3.5.3 e uma IDE que suporte ambos.
+
 === O que é DataStax?
 === Requisitos para o código
 === Utilizando o driver da DataStax
