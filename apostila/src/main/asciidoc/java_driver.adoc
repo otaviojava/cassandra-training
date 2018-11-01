@@ -111,8 +111,6 @@ TIP: Para cada novo projeto uma boa estratégia seria criar um projeto utilizand
 === Utilizando o driver da DataStax
 
 
-=== Exemplo
-
 === OxM vs ORM
 
 Após o exemplo utilizando o código driver a pergunta mais frequente que o desenvolvedor realiza é:
