@@ -1456,3 +1456,5 @@ INSERT INTO library.magazine JSON '{"id": "new magazine", "pages": 10}';
 Unauthorized: Error from server: code=2100 [Unauthorized] message="User ada has no MODIFY permission on <table library.magazine> or any of its parents"
 
 ----
+
+Nesse capítulo foi possível mostrar que o Cassandra Query Language ou CQL tem muitas mais semelhanças com o SQL além do nome, de modo que um desenvolvedor que já conhece bem os bancos de dados relacionais e sua sintaxe de comunicação teria uma baixa curva de aprendizagem ao aprender o Cassandra. Um ponto importante que esse capítulo explorou foi o uso de segurança que existe dentro do Cassandra, vale salientar, que NoSQL não significa NoSecurity de modo que é sempre importante se preocupar com a segurança seja com firewalls de acesso seja com permissão de usuário e senha para pontos do banco de dados.

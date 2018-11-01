@@ -201,3 +201,6 @@ services:
 networks:
     cassandranet:
 ----
+
+
+A instalação e a configuração do cassandra seja em cluster utilizando ou não contanier como docker se mostrou algo realmente muito simples se compararmos uma configuração de cluster semelhante dentro de um banco de dados relacional. Um ponto importante é que a popularidade do docker não é em vão, a sua facilidade de execução e de configuração para um nó ou clusters é realmente muito interessante principalmente para desenvolvedores, talvez, esse seja o motivo que atualmente o docker é considerado a maior ferramenta quando o assunto é DevOps. Nas próximas cenas será discutido como realizar a comunicação com o Cassandra, algo que será extremamente simples caso o leitor já esteja acostumado com os bancos relacionais.

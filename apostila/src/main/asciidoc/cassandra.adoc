@@ -134,3 +134,5 @@ Uma informação importante é que tanto o memtables e o SSTables são armazenad
 
 .A sequência de escrita que acontece dentro de um nó do Cassandra.
 image::write_sequence.png[Sequência de escrita]
+
+O banco de dados Apache Cassandra é um banco NoSQL do tipo família de coluna do qual possui suas próprias características e hierarquia. Sua forma de distribuir os dados na escrita entre os cluster a partir da chave faz com que ele foque em disponibilidade e tolerância a falhas, pensando teorema do CAP o Cassandra teria um foco no AP. Porém, um ponto importante é que existe a possibilidade de cada requisição, seja para leitura ou escrita, definir um nível de consistência de maneira que em alguns casos pode-se adicionar uma maior consistência com trade-off de se perder disponibilidade. No próximo capítulo, sairemos um pouco da teoria e aprenderemos como instalar o Cassandra de várias formas.
