@@ -88,9 +88,9 @@ cqlsh> SHOW VERSION
 ----
 
 Por padrão docker, todos os arquivos são criados dentro do container e isso significa:
-* Os dados não existirão quando o container não existirão
-* Isso pode ser difícil quando os dados precisam ser compartilhados entre containers
-* Para escrever na camada do container é necessário possui um https://docs.docker.com/storage/storagedriver/[driver de armazenamento]. Esse driver provê união entre o filesystem utilizando o kernel do Linux. Essa abstração extra https://docs.docker.com/storage/[reduz performance] comparado a utilizando a ter os volumes de dados escrito diretamente no host.
+* Os dados não existirão quando o container não existir
+* Isso pode ser difícil quando os dados precisarem ser compartilhados entre containers
+* Para escrever na camada do container é necessário possuir um https://docs.docker.com/storage/storagedriver/[driver de armazenamento]. Esse driver provê união entre o filesystem utilizando o kernel do Linux. Essa abstração extra https://docs.docker.com/storage/[reduz performance] comparado a utilizando a ter os volumes de dados escrito diretamente no host.
 
 Assim, para extrair o volume de dados para fora do container é necessário mapear o caminho `/var/lib/cassandra`, por exemplo:
 

@@ -25,7 +25,126 @@ Fácil integração com outros projetos dentro do Spring dentre eles o Spring MV
 Suporte por auditoria
 
 
-Dentro do Spring Data existe o Spring Data Cassandra que suporte tem suporte a criação de repositórios, suporte a operações síncronas e assíncronas, recursos como query builders e uma altíssima abstração do Cassandra a ponto que se torne dispensável aprender o Cassandra Query Language.
+Dentro do Spring Data existe o Spring Data Cassandra que suporte tem suporte a criação de repositórios, suporte a operações síncronas e assíncronas, recursos como query builders e uma altíssima abstração do Cassandra a ponto que se torne dispensável aprender o Cassandra Query Language. Para adentrar no maravilhoso mundo do Spring, o primeiro passo é adicionar a dependência no projeto.
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.data</groupId>
+    <artifactId>spring-data-cassandra</artifactId>
+    <version>2.1.2.RELEASE</version>
+</dependency>
+----
+
+Definido as dependências, o próximo passo é o código de infraestrutura que ativa o Spring e a configuração de conexão com o Cassandra. A classe Config tem duas anotações: uma para procurar os componentes dentro de um específico pacote e o outro para fazer algo similar aos repositórios Cassandra. Já a classe CassandraConfig dispõe as configurações para a conexão com o Cassandra, por exemplo, o keyspace a ser utilizado, configurações do cluster e o Mapper Cassandra Spring.
+
+
+
+[source,java]
+----
+@ComponentScan("com.nosqlxp.cassandra")
+@EnableCassandraRepositories("com.nosqlxp.cassandra")
+public class Config {
+}
+
+
+@Configuration
+public class CassandraConfig extends AbstractCassandraConfiguration {
+
+    @Override
+    protected String getKeyspaceName() {
+        return "library";
+    }
+
+    @Bean
+    public CassandraClusterFactoryBean cluster() {
+        CassandraClusterFactoryBean cluster =
+                new CassandraClusterFactoryBean();
+        cluster.setContactPoints("127.0.0.1");
+        cluster.setPort(9042);
+        return cluster;
+    }
+
+    @Bean
+    public CassandraMappingContext cassandraMapping() {
+        BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+        mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(cluster().getObject(), getKeyspaceName()));
+        return mappingContext;
+    }
+
+
+}
+----
+
+TIP: Nesse livro não falaremos detalhes do recurso do Spring para obter mais informações sobre o framework um bom livro é o Vire o Jogo com Spring da Casa do código: https://www.casadocodigo.com.br/products/livro-spring-framework
+
+
+
+Código de configuração ou infraestrutura criado, trabalharemos no primeiro exemplo que é a leitura e a escrita do livro. A modelagem acontece de maneira simples e intuitiva graças as anotações do Spring Data Cassandra já que `Table` é mapear a entidade, `PrimaryKey` para identificar a chave primária e `Column` os campos que serão persistidos.
+
+[source,java]
+----
+@Table
+public class Book {
+
+    @PrimaryKey
+    private Long isbn;
+
+    @Column
+    private String name;
+
+    @Column
+    private String author;
+
+    @Column
+    private Set<String> categories;
+
+    //getter and setter
+}
+----
+
+Para a manipulação dos dados existe a classe CassandraTemplate que é um esqueleto para realizar uma operação entre o Cassandra o objeto mapeado. De uma maneira bem análoga com o padrão Template Method, porém, para operações no banco de dados com o Cassandra. Um ponto importante desse CassandraTemplate é que é possível realizar chamadas CQL que ele se encarregará de converter para o objeto alvo, nesse caso o `Book`.
+
+[source,java]
+----
+public class App {
+    private static final String KEYSPACE = "library";
+    private static final String COLUMN_FAMILY = "book";
+
+    public static void main(String[] args) {
+
+        try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Config.class)) {
+
+            CassandraTemplate template = ctx.getBean(CassandraTemplate.class);
+
+            Book cleanCode = getBook(1L, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO"));
+            Book cleanArchitecture = getBook(2L, "Clean Architecture", "Robert Cecil Martin", Sets.newHashSet("Good practice"));
+            Book effectiveJava = getBook(3L, "Effective Java", "Joshua Bloch", Sets.newHashSet("Java", "Good practice"));
+            Book nosql = getBook(4L, "Nosql Distilled", "Martin Fowler", Sets.newHashSet("NoSQL", "Good practice"));
+
+            template.insert(cleanCode);
+            template.insert(cleanArchitecture);
+            template.insert(effectiveJava);
+            template.insert(nosql);
+
+            List<Book> books = template.select(QueryBuilder.select().from(KEYSPACE, COLUMN_FAMILY), Book.class);
+            System.out.println(books);
+
+
+        }
+    }
+
+
+    private static Book getBook(long isbn, String name, String author, Set<String> categories) {
+        Book book = new Book();
+        book.setIsbn(isbn);
+        book.setName(name);
+        book.setAuthor(author);
+        book.setCategories(categories);
+        return book;
+    }
+}
+----
 
 
 O Spring framework é um projeto que trouxe uma grande inovação para o mundo Java, seus recursos e facilitações fazem com que ele seja o mais popular no mundo Java. Dentro da comunicação no banco de dados existe o Spring Data do qual é integrado com o Cassandra do qual existem diversas facilitações a ponto de não ser necessário aprender o Cassandra Query Language.

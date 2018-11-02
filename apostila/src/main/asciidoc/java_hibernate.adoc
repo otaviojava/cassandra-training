@@ -343,7 +343,7 @@ public class App4 {
 }
 ----
 
-
+WARNING: O grande benefício de utilizar o JPA como API é também o seu problema. Uma vez que a API não foi desenhada para os bancos não relacionais não é possível, por exemplo, realizar operações assíncronas ou definir nível de consistência numa operação.
 
 Utilizar uma API que o desenvolvedor já conhece para navegar um novo paradigma no mundo da persistência é uma grande estratégia do qual o Hibernate tira o proveito dessa lacuna. Porém, essa facilidade cobre o seu preço uma vez que o JPA foi feito para o banco de dados relacional, assim, existem diversas lacunas que API tende a não cobrir no mundo NoSQL, por exemplo, operações de maneira assincronia assim como definições de nível de consistência existente no Cassandra.
 

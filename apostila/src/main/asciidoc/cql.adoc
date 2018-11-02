@@ -428,7 +428,7 @@ Existem algumas boas práticas ao se utilizar índices que são:
 
 === Tipos no Cassandra
 
-Dentro de uma família de colunas cada campo tem um tipo definido. Esse tipo define como o dado será armazenado dentro do banco de dados. No cassandra os tipos são devividos em três tipos:
+Dentro de uma família de colunas cada campo tem um tipo definido. Esse tipo define como o dado será armazenado dentro do banco de dados. No cassandra os tipos são divididos em três tipos:
 
 * Tipos nativos
 * Tipos de coleção
