@@ -14,7 +14,7 @@
             <property name="hibernate.ogm.datastore.create_database" value="true"/>
             <property name="hibernate.ogm.datastore.database" value="library"/>
             <property name="hibernate.search.default.directory_provider" value="filesystem"/>
-            <property name="hibernate.search.default.indexBase" value="/home/otaviojava/temp/data"/>
+            <property name="hibernate.search.default.indexBase" value="/tmp/lucene/data"/>
         </properties>
     </persistence-unit>
 
