@@ -1,8 +1,6 @@
 package com.nosqlxp.cassandra;
 
 import com.google.common.collect.Sets;
-import org.jnosql.artemis.PreparedStatement;
-import org.jnosql.artemis.column.ColumnTemplate;
 
 import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.se.SeContainerInitializer;
@@ -11,40 +9,38 @@ import java.util.Set;
 
 /**
  * Hello world!
+ *
  */
-public class App2 {
-
-
-    public static void main(String[] args) {
-
+public class App5
+{
+    public static void main( String[] args )
+    {
         try(SeContainer container = SeContainerInitializer.newInstance().initialize()) {
-            ColumnTemplate template =  container.select(ColumnTemplate.class).get();
+            BookRepository repository =  container.select(BookRepository.class).get();
 
             Book cleanCode = getBook(1L, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO"));
             Book cleanArchitecture = getBook(2L, "Clean Architecture", "Robert Cecil Martin", Sets.newHashSet("Good practice"));
             Book effectiveJava = getBook(3L, "Effective Java", "Joshua Bloch", Sets.newHashSet("Java", "Good practice"));
             Book nosql = getBook(4L, "Nosql Distilled", "Martin Fowler", Sets.newHashSet("NoSQL", "Good practice"));
 
-            template.insert(cleanCode);
-            template.insert(cleanArchitecture);
-            template.insert(effectiveJava);
-            template.insert(nosql);
+            repository.save(cleanCode);
+            repository.save(cleanArchitecture);
+            repository.save(effectiveJava);
+            repository.save(nosql);
 
+            Optional<Book> book = repository.findById(1L);
+            System.out.println(book);
 
-            Optional<Book> book = template.find(Book.class, 1L);
-            System.out.println("Book found: " + book);
+            repository.deleteById(1L);
 
-            template.delete(Book.class, 1L);
+            System.out.println("Using method query");
+            repository.findAll().forEach(System.out::println);
+            System.out.println("Using CQL");
+            repository.findAll1().forEach(System.out::println);
+            System.out.println("Using query JNoSQL");
+            repository.findAll2().forEach(System.out::println);
 
-            System.out.println("Book found: " + template.find(Book.class, 1L));
-
-
-            PreparedStatement prepare = template.prepare("select * from Book where isbn = @isbn");
-            prepare.bind("isbn",2L);
-            Optional<Book> result = prepare.getSingleResult();
-            System.out.println("prepare: " + result);
         }
-
     }
 
     private static Book getBook(long isbn, String name, String author, Set<String> categories) {
@@ -55,5 +51,4 @@ public class App2 {
         book.setCategories(categories);
         return book;
     }
-
 }
