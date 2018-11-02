@@ -42,7 +42,7 @@ public class App4 {
             BookType cleanCode = getBook(1L, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO"));
             BookType cleanArchitecture = getBook(2L, "Clean Architecture", "Robert Cecil Martin", Sets.newHashSet("Good practice"));
             BookType effectiveJava = getBook(3L, "Effective Java", "Joshua Bloch", Sets.newHashSet("Java", "Good practice"));
-            BookType nosqlDistilled = getBook(4L, "Nosql Distilled", "Joshua Bloch", Sets.newHashSet("NoSQL", "Good practice"));
+            BookType nosqlDistilled = getBook(4L, "Nosql Distilled", "Martin Fowler", Sets.newHashSet("NoSQL", "Good practice"));
 
 
             Category java = getCategory("Java", Sets.newHashSet(cleanCode, effectiveJava));

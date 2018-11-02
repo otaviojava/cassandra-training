@@ -25,6 +25,7 @@
     <module>apostila</module>
     <module>driver-datastax</module>
     <module>mapper-datastax</module>
+    <module>hibernate</module>
     <module>spring-data</module>
     <module>jnosql</module>
 </modules>

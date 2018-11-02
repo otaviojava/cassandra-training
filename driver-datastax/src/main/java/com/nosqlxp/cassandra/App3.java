@@ -34,7 +34,7 @@ public class App3 {
             UDTValue cleanCode = getValue(userType, 1, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO", "Good practice", "Design"));
             UDTValue cleanArchitecture = getValue(userType, 2, "Clean Architecture", "Robert Cecil Martin", Sets.newHashSet("OO", "Good practice"));
             UDTValue effectiveJava = getValue(userType, 3, "Effective Java", "Joshua Bloch", Sets.newHashSet("Java", "OO", "Good practice"));
-            UDTValue nosql = getValue(userType, 4, "Nosql Distilled", "Joshua Bloch", Sets.newHashSet("NoSQL", "Good practice"));
+            UDTValue nosql = getValue(userType, 4, "Nosql Distilled", "Martin Fowler", Sets.newHashSet("NoSQL", "Good practice"));
 
             session.execute(QueryBuilder.insertInto(KEYSPACE, COLUMN_FAMILY).values(NAMES, new Object[]{"Java", Sets.newHashSet(cleanCode, effectiveJava)}));
             session.execute(QueryBuilder.insertInto(KEYSPACE, COLUMN_FAMILY).values(NAMES, new Object[]{"OO", Sets.newHashSet(cleanCode, effectiveJava, cleanArchitecture)}));

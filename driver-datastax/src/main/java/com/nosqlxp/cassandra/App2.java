@@ -31,7 +31,7 @@ public class App2 {
             Object[] cleanCode = new Object[]{1, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO")};
             Object[] cleanArchitecture = new Object[]{2, "Clean Architecture", "Robert Cecil Martin", Sets.newHashSet("Good practice")};
             Object[] effectiveJava = new Object[]{3, "Effective Java", "Joshua Bloch", Sets.newHashSet("Java", "Good practice")};
-            Object[] nosql = new Object[]{4, "Nosql Distilled", "Joshua Bloch", Sets.newHashSet("NoSQL", "Good practice")};
+            Object[] nosql = new Object[]{4, "Nosql Distilled", "Martin Fowler", Sets.newHashSet("NoSQL", "Good practice")};
 
             session.execute(QueryBuilder.insertInto(KEYSPACE, COLUMN_FAMILY).values(NAMES, cleanCode));
             session.execute(QueryBuilder.insertInto(KEYSPACE, COLUMN_FAMILY).values(NAMES, cleanArchitecture));

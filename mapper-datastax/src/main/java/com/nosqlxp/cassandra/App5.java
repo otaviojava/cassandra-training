@@ -33,7 +33,7 @@ public class App5 {
             Book cleanCode = getBook(1L, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO"));
             Book cleanArchitecture = getBook(2L, "Clean Architecture", "Robert Cecil Martin", Sets.newHashSet("Good practice"));
             Book effectiveJava = getBook(3L, "Effective Java", "Joshua Bloch", Sets.newHashSet("Java", "Good practice"));
-            Book nosql = getBook(4L, "Nosql Distilled", "Joshua Bloch", Sets.newHashSet("NoSQL", "Good practice"));
+            Book nosql = getBook(4L, "Nosql Distilled", "Martin Fowler", Sets.newHashSet("NoSQL", "Good practice"));
 
             mapper.saveAsync(cleanCode);
             mapper.saveAsync(cleanArchitecture);
