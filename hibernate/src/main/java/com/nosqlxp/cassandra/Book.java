@@ -1,29 +1,38 @@
 package com.nosqlxp.cassandra;
 
 
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.DocumentId;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Table;
 import java.util.Objects;
-import java.util.Set;
 
-@Table(name = "book")
-@Entity
+@Entity(name = "book")
+@Indexed
+@Analyzer(impl = org.apache.lucene.analysis.standard.StandardAnalyzer.class)
 public class Book {
 
     @Id
+    @DocumentId
     private Long isbn;
 
     @Column
+    @Field(analyze = Analyze.NO)
     private String name;
 
     @Column
+    @Field
     private String author;
 
     @Column
-    private Set<String> categories;
+    @Field
+    private String category;
+
 
     public Long getIsbn() {
         return isbn;
@@ -49,12 +58,12 @@ public class Book {
         this.author = author;
     }
 
-    public Set<String> getCategories() {
-        return categories;
+    public String getCategory() {
+        return category;
     }
 
-    public void setCategories(Set<String> categories) {
-        this.categories = categories;
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     @Override
@@ -79,8 +88,7 @@ public class Book {
         final StringBuilder sb = new StringBuilder("Book{");
         sb.append("isbn=").append(isbn);
         sb.append(", name='").append(name).append('\'');
-        sb.append(", author='").append(author).append('\'');
-        sb.append(", categories=").append(categories);
+        sb.append(", author='").append(author);
         sb.append('}');
         return sb.toString();
     }
