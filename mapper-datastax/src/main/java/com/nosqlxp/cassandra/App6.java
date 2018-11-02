@@ -2,16 +2,12 @@ package com.nosqlxp.cassandra;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
 import com.datastax.driver.mapping.Result;
 import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.stream.StreamSupport;
 
 /**
@@ -25,7 +21,7 @@ public class App6 {
             Session session = cluster.connect();
             MappingManager manager = new MappingManager(session);
             Mapper<Book> mapper = manager.mapper(Book.class);
-            BookRepository bookRepository = manager.createAccessor(BookRepository.class);
+            BookAccessor bookAccessor = manager.createAccessor(BookAccessor.class);
 
 
             Book cleanCode = getBook(1L, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO"));
@@ -38,11 +34,11 @@ public class App6 {
             mapper.save(effectiveJava);
             mapper.save(nosql);
 
-            Result<Book> all = bookRepository.getAll();
+            Result<Book> all = bookAccessor.getAll();
             StreamSupport.stream(all.spliterator(), false).forEach(System.out::println);
 
-            Book book = bookRepository.findById(1L);
-            Book book2 = bookRepository.findById(2L);
+            Book book = bookAccessor.findById(1L);
+            Book book2 = bookAccessor.findById(2L);
             System.out.println(book);
 
             System.out.println(book2);

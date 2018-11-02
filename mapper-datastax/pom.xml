@@ -30,14 +30,8 @@
     <dependencies>
         <dependency>
             <groupId>com.datastax.cassandra</groupId>
-            <artifactId>cassandra-driver-core</artifactId>
-            <version>${datastax.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-mapping</artifactId>
-            <version>${datastax.version}</version>
+            <version>3.6.0</version>
         </dependency>
-
     </dependencies>
 </project>

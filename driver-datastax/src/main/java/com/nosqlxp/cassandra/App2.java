@@ -54,7 +54,7 @@ public class App2 {
             PreparedStatement prepare = session.prepare("select * from library.book where isbn = ?");
             BoundStatement statement = prepare.bind(2L);
             ResultSet resultSet = session.execute(statement);
-            StreamSupport.stream(resultSet.spliterator(), false).forEach(log);
+            resultSet.forEach(log);
 
 
         }

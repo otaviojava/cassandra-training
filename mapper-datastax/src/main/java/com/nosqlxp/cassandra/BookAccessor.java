@@ -6,7 +6,7 @@ import com.datastax.driver.mapping.annotations.Param;
 import com.datastax.driver.mapping.annotations.Query;
 
 @Accessor
-public interface BookRepository {
+public interface BookAccessor {
 
     @Query("SELECT * FROM library.book")
     Result<Book> getAll();
