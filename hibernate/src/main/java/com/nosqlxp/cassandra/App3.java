@@ -33,13 +33,14 @@ public class App3 {
         org.apache.lucene.search.Query query = qb
                 .keyword()
                 .onFields("name", "author")
-                .matching("Robert Cecil")
+                .matching("Robert")
                 .createQuery();
 
         Query persistenceQuery =  fullTextEntityManager.createFullTextQuery(query, Book.class);
         List<Book> result = persistenceQuery.getResultList();
         System.out.println(result);
 
+        managerFactory.close();
     }
 
 

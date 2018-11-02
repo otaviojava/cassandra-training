@@ -1,6 +1,7 @@
 package com.nosqlxp.cassandra;
 
 
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.DocumentId;
@@ -14,7 +15,7 @@ import java.util.Objects;
 
 @Entity(name = "book")
 @Indexed
-@Analyzer(impl = org.apache.lucene.analysis.standard.StandardAnalyzer.class)
+@Analyzer(impl = StandardAnalyzer.class)
 public class Book {
 
     @Id

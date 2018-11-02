@@ -36,6 +36,7 @@ public class App4 {
         Query query = fullTextEntityManager.createFullTextQuery(luceneQuery, Book.class);
         List<Book> result = query.getResultList();
         System.out.println(result);
+        managerFactory.close();
 
     }
 

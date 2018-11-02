@@ -37,6 +37,7 @@ public class App2 {
         query.setParameter("name", name);
         List<Book> books = query.getResultList();
         System.out.println("books: " + books);
+        managerFactory.close();
     }
 
 

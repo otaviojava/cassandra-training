@@ -1,11 +1,8 @@
 package com.nosqlxp.cassandra;
 
-import com.google.common.collect.Sets;
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import java.util.Set;
 
 /**
  * Hello world!
@@ -33,6 +30,7 @@ public class App {
 
         Book book = manager.find(Book.class, 1L);
         System.out.println("book: " + book);
+        managerFactory.close();
     }
 
 
