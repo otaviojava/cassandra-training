@@ -29,16 +29,11 @@ public class App4 {
         manager.getTransaction().commit();
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 
-        QueryBuilder qb = fullTextEntityManager.getSearchFactory()
-                .buildQueryBuilder().forEntity(Book.class).get();
-        org.apache.lucene.search.Query query = qb
-                .keyword()
-                .onFields("name", "author")
-                .matching("Robert Cecil")
-                .createQuery();
+        QueryBuilder builder = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(Book.class).get();
+        org.apache.lucene.search.Query luceneQuery = builder.keyword().onFields("category").matching("Java").createQuery();
 
-        Query persistenceQuery = fullTextEntityManager.createFullTextQuery(query, Book.class);
-        List<Book> result = persistenceQuery.getResultList();
+        Query query = fullTextEntityManager.createFullTextQuery(luceneQuery, Book.class);
+        List<Book> result = query.getResultList();
         System.out.println(result);
         manager.getTransaction().commit();
 
@@ -50,6 +45,7 @@ public class App4 {
         book.setIsbn(isbn);
         book.setName(name);
         book.setAuthor(author);
+        book.setCategory(category);
         return book;
     }
 
