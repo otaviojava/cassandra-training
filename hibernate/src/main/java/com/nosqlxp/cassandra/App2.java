@@ -20,8 +20,17 @@ public class App2 {
         EntityManager manager = managerFactory.createEntityManager();
         manager.getTransaction().begin();
         String name = "Clean Code";
-        Book cleanCode = getBook(1L, name, "Robert Cecil Martin");
+        Book cleanCode = getBook(1L, "Clean Code", "Robert Cecil Martin");
+        Book cleanArchitecture = getBook(2L, "Clean Architecture", "Robert Cecil Martin");
+        Book agile = getBook(3L, "Agile Principles, Patterns, and Practices in C#", "Robert Cecil Martin");
+        Book effectiveJava = getBook(4L, "Effective Java", "Joshua Bloch");
+        Book javaConcurrency = getBook(5L, "Java Concurrency", "Robert Cecil Martin");
+
         manager.merge(cleanCode);
+        manager.merge(cleanArchitecture);
+        manager.merge(agile);
+        manager.merge(effectiveJava);
+        manager.merge(javaConcurrency);
         manager.getTransaction().commit();
 
         Query query = manager.createQuery("select b from book b where name = :name");

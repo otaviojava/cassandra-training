@@ -27,6 +27,7 @@ public class App4 {
         manager.merge(getBook(5L, "Java Concurrency", "Robert Cecil Martin", "Java,OO"));
         manager.merge(getBook(6L, "Nosql Distilled", "Martin Fowler", "Java,OO"));
         manager.getTransaction().commit();
+
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 
         QueryBuilder builder = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(Book.class).get();
@@ -35,7 +36,6 @@ public class App4 {
         Query query = fullTextEntityManager.createFullTextQuery(luceneQuery, Book.class);
         List<Book> result = query.getResultList();
         System.out.println(result);
-        manager.getTransaction().commit();
 
     }
 

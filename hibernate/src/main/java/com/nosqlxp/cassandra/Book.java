@@ -88,7 +88,8 @@ public class Book {
         final StringBuilder sb = new StringBuilder("Book{");
         sb.append("isbn=").append(isbn);
         sb.append(", name='").append(name).append('\'');
-        sb.append(", author='").append(author);
+        sb.append(", author='").append(author).append('\'');
+        sb.append(", category='").append(category).append('\'');
         sb.append('}');
         return sb.toString();
     }

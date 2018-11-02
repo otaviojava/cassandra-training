@@ -39,7 +39,6 @@ public class App3 {
         Query persistenceQuery =  fullTextEntityManager.createFullTextQuery(query, Book.class);
         List<Book> result = persistenceQuery.getResultList();
         System.out.println(result);
-        manager.getTransaction().commit();
 
     }
 
