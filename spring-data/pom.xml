@@ -13,6 +13,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <org.springframework.data.version>2.1.2.RELEASE</org.springframework.data.version>
     </properties>
     <build>
         <plugins>
@@ -28,10 +29,9 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-cassandra</artifactId>
+            <version>${org.springframework.data.version}</version>
         </dependency>
     </dependencies>
 </project>

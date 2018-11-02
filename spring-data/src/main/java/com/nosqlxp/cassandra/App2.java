@@ -1,27 +1,22 @@
 package com.nosqlxp.cassandra;
 
-import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.collect.Sets;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 
-import java.util.List;
 import java.util.Set;
 
 /**
  * Hello world!
- *
  */
-public class App 
-{
-    private static final String CONFIG_PACKAGE = "com.nosqlxp.cassandra";
-    private static final String KEYSPACE = "library";
-    private static final String COLUMN_FAMILY = "book";
+public class App2 {
 
-    public static void main(String[] args )
-    {
+    private static final String CONFIG_PACKAGE = "com.nosqlxp.cassandra";
+
+    public static void main(String[] args) {
 
         try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext()) {
+
             ctx.scan(CONFIG_PACKAGE);
             ctx.refresh();
             CassandraTemplate template = ctx.getBean(CassandraTemplate.class);
@@ -36,13 +31,13 @@ public class App
             template.insert(effectiveJava);
             template.insert(nosql);
 
-            List<Book> books = template.select(QueryBuilder.select().from(KEYSPACE, COLUMN_FAMILY), Book.class);
-            System.out.println(books);
-
+            Book book = template.selectOneById(1L, Book.class);
+            System.out.println(book);
+            template.deleteById(1L, Book.class);
 
         }
-    }
 
+    }
 
     private static Book getBook(long isbn, String name, String author, Set<String> categories) {
         Book book = new Book();
@@ -52,4 +47,5 @@ public class App
         book.setCategories(categories);
         return book;
     }
+
 }
