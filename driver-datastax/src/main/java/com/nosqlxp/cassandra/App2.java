@@ -69,7 +69,7 @@ public class App2 {
 
     private static void findById(Session session, long isbn, Consumer<Row> log) {
         ResultSet resultSet = session.execute(QueryBuilder.select().from(KEYSPACE, COLUMN_FAMILY).where(QueryBuilder.eq("isbn", isbn)));
-        StreamSupport.stream(resultSet.spliterator(), false).forEach(log);
+        resultSet.forEach(log);
     }
 
 }

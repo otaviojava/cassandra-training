@@ -8,7 +8,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.collect.Sets;
 
 import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * Hello world!
@@ -44,7 +43,6 @@ public class App {
                 System.out.println(String.format(" the result is %s %s %s %s", isbn, name, author, categories));
             }
         }
-
 
     }
 

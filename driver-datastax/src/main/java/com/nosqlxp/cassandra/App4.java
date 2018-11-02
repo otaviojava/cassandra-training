@@ -17,7 +17,6 @@ import com.google.common.collect.Sets;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.StreamSupport;
 
 /**
  * Hello world!
@@ -65,14 +64,14 @@ public class App4 {
             PreparedStatement prepare = session.prepare("select * from library.category where name = ?");
             BoundStatement statement = prepare.bind("Java");
             ResultSet resultSet = session.execute(statement);
-            StreamSupport.stream(resultSet.spliterator(), false).forEach(log);
+            resultSet.forEach(log);
         }
 
     }
 
     private static void findById(Session session, String name, Consumer<Row> log) {
         ResultSet resultSet = session.execute(QueryBuilder.select().from(KEYSPACE, COLUMN_FAMILY).where(QueryBuilder.eq("name", name)));
-        StreamSupport.stream(resultSet.spliterator(), false).forEach(log);
+        resultSet.forEach(log);
     }
 
     private static void deleteById(Session session, String name) {
