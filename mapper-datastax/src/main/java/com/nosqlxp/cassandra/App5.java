@@ -22,7 +22,7 @@ public class App5 {
     private static final String KEYSPACE = "library";
     private static final String COLUMN_FAMILY = "book";
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args)  {
         try (Cluster cluster = Cluster.builder().addContactPoint("127.0.0.1").build()) {
 
             Session session = cluster.connect();

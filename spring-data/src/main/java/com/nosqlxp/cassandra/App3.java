@@ -1,32 +1,24 @@
 package com.nosqlxp.cassandra;
 
-import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TypeCodec;
-import com.datastax.driver.core.UDTValue;
-import com.datastax.driver.core.UserType;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
 import com.datastax.driver.mapping.Result;
 import com.google.common.collect.Sets;
 
-import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.StreamSupport;
 
 /**
  * Hello world!
  */
-public class App4 {
+public class App3 {
 
+    private static final String KEYSPACE = "library";
+    private static final String COLUMN_FAMILY = "category";
 
     public static void main(String[] args) {
         try (Cluster cluster = Cluster.builder().addContactPoint("127.0.0.1").build()) {
@@ -51,14 +43,9 @@ public class App4 {
             mapper.save(goodPractice);
             mapper.save(nosql);
 
-            Category category = mapper.get("Java");
-            System.out.println(category);
-            mapper.delete("Java");
-
-            PreparedStatement prepare = session.prepare("select * from library.category where name = ?");
-            BoundStatement statement = prepare.bind("Java");
-            Result<Category> resultSet = mapper.map(session.execute(statement));
-            StreamSupport.stream(resultSet.spliterator(), false).forEach(System.out::println);
+            ResultSet resultSet = session.execute(QueryBuilder.select().from(KEYSPACE, COLUMN_FAMILY));
+            Result<Category> categories = mapper.map(resultSet);
+            StreamSupport.stream(categories.spliterator(), false).forEach(System.out::println);
         }
 
     }

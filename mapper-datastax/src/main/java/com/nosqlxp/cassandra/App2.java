@@ -23,8 +23,6 @@ import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
  */
 public class App2 {
 
-    private static final String KEYSPACE = "library";
-    private static final String COLUMN_FAMILY = "book";
 
     public static void main(String[] args) {
         try (Cluster cluster = Cluster.builder().addContactPoint("127.0.0.1").build()) {
