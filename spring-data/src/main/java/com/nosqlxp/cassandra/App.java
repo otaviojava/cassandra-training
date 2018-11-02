@@ -10,20 +10,15 @@ import java.util.Set;
 
 /**
  * Hello world!
- *
  */
-public class App 
-{
-    private static final String CONFIG_PACKAGE = "com.nosqlxp.cassandra";
+public class App {
     private static final String KEYSPACE = "library";
     private static final String COLUMN_FAMILY = "book";
 
-    public static void main(String[] args )
-    {
+    public static void main(String[] args) {
 
-        try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext()) {
-            ctx.scan(CONFIG_PACKAGE);
-            ctx.refresh();
+        try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Config.class)) {
+
             CassandraTemplate template = ctx.getBean(CassandraTemplate.class);
 
             Book cleanCode = getBook(1L, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO"));

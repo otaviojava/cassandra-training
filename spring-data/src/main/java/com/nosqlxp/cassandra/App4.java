@@ -1,20 +1,16 @@
 package com.nosqlxp.cassandra;
 
-import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.collect.Sets;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 
-import java.util.List;
 import java.util.Set;
 
 /**
  * Hello world!
  */
-public class App3 {
+public class App4 {
 
-    private static final String KEYSPACE = "library";
-    private static final String COLUMN_FAMILY = "category";
 
     public static void main(String[] args) {
 
@@ -38,8 +34,10 @@ public class App3 {
             template.insert(goodPractice);
             template.insert(nosql);
 
-            List<Category> categories = template.select(QueryBuilder.select().from(KEYSPACE, COLUMN_FAMILY), Category.class);
-            System.out.println(categories);
+            Category category = template.selectOneById("Java", Category.class);
+            System.out.println(category);
+            template.deleteById("Java", Category.class);
+
         }
 
     }

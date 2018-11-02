@@ -20,7 +20,7 @@ public class BookType {
     @CassandraType(type = DataType.Name.TEXT)
     private String author;
 
-    @CassandraType(type = DataType.Name.TEXT)
+    @CassandraType(type = DataType.Name.SET, typeArguments = DataType.Name.TEXT)
     private Set<String> categories;
 
     public Long getIsbn() {
