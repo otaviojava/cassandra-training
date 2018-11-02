@@ -146,5 +146,256 @@ public class App {
 }
 ----
 
+A classe AnnotationConfigApplicationContext levanta o container Spring varrendo as classes anotadas e definidas e em busca das injeções de dependência, um ponto importante é que ela permite o uso de try-resources, ou seja, tão logo sai do bloco do `try` a própria JVM se encarregará de chamar e método `close` e fechar o container do Spring para o desenvolvedor.
+
+
+Para o próximo passo, é possível perceber que não é realizado nenhum contato com o CQL em si, apenas com o template do Cassandra.
+
+
+[source,java]
+----
+public class App2 {
+
+
+    public static void main(String[] args) {
+
+        try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Config.class)) {
+
+            CassandraTemplate template = ctx.getBean(CassandraTemplate.class);
+
+            Book cleanCode = getBook(1L, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO"));
+            Book cleanArchitecture = getBook(2L, "Clean Architecture", "Robert Cecil Martin", Sets.newHashSet("Good practice"));
+            Book effectiveJava = getBook(3L, "Effective Java", "Joshua Bloch", Sets.newHashSet("Java", "Good practice"));
+            Book nosql = getBook(4L, "Nosql Distilled", "Martin Fowler", Sets.newHashSet("NoSQL", "Good practice"));
+
+            template.insert(cleanCode);
+            template.insert(cleanArchitecture);
+            template.insert(effectiveJava);
+            template.insert(nosql);
+
+            Book book = template.selectOneById(1L, Book.class);
+            System.out.println(book);
+            template.deleteById(1L, Book.class);
+
+        }
+
+    }
+
+    private static Book getBook(long isbn, String name, String author, Set<String> categories) {
+        Book book = new Book();
+        book.setIsbn(isbn);
+        book.setName(name);
+        book.setAuthor(author);
+        book.setCategories(categories);
+        return book;
+    }
+
+}
+----
+
+Para a última parte do desafio que consiste na leitura das categorias do livro, as anotações são as mesmas utilizadas no caso do livro com exceção do UDT `Book` que possui as anotações UserDefinedType e CassandraType que definem o nome do UDT e as informações para o campo respectivamente.
+
+
+[source,java]
+----
+@Table
+public class Category {
+
+    @PrimaryKey
+    private String name;
+
+    @Column
+    private Set<BookType> books;
+
+   //getter and setter
+}
+
+@UserDefinedType("book")
+public class BookType {
+
+    @CassandraType(type = DataType.Name.BIGINT)
+    private Long isbn;
+
+    @CassandraType(type = DataType.Name.TEXT)
+    private String name;
+
+    @CassandraType(type = DataType.Name.TEXT)
+    private String author;
+
+    @CassandraType(type = DataType.Name.SET, typeArguments = DataType.Name.TEXT)
+    private Set<String> categories;
+
+    //getter and setter
+}
+----
+
+
+Além das anotações do UDT nada se difere dos dois primeiros caso com relação a consulta pela chave e a persistência do banco de dados.
+
+[source,java]
+----
+public class App3 {
+
+    private static final String KEYSPACE = "library";
+    private static final String COLUMN_FAMILY = "category";
+
+    public static void main(String[] args) {
+
+        try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Config.class)) {
+
+            CassandraTemplate template = ctx.getBean(CassandraTemplate.class);
+
+            BookType cleanCode = getBook(1L, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO"));
+            BookType cleanArchitecture = getBook(2L, "Clean Architecture", "Robert Cecil Martin", Sets.newHashSet("Good practice"));
+            BookType effectiveJava = getBook(3L, "Effective Java", "Joshua Bloch", Sets.newHashSet("Java", "Good practice"));
+            BookType nosqlDistilled = getBook(4L, "Nosql Distilled", "Martin Fowler", Sets.newHashSet("NoSQL", "Good practice"));
+
+
+            Category java = getCategory("Java", Sets.newHashSet(cleanCode, effectiveJava));
+            Category oo = getCategory("OO", Sets.newHashSet(cleanCode, effectiveJava, cleanArchitecture));
+            Category goodPractice = getCategory("Good practice", Sets.newHashSet(cleanCode, effectiveJava, cleanArchitecture, nosqlDistilled));
+            Category nosql = getCategory("NoSQL", Sets.newHashSet(nosqlDistilled));
+
+            template.insert(java);
+            template.insert(oo);
+            template.insert(goodPractice);
+            template.insert(nosql);
+
+            List<Category> categories = template.select(QueryBuilder.select().from(KEYSPACE, COLUMN_FAMILY), Category.class);
+            System.out.println(categories);
+        }
+
+    }
+
+    private static Category getCategory(String name, Set<BookType> books) {
+        Category category = new Category();
+        category.setName(name);
+        category.setBooks(books);
+        return category;
+    }
+
+    private static BookType getBook(long isbn, String name, String author, Set<String> categories) {
+        BookType book = new BookType();
+        book.setIsbn(isbn);
+        book.setName(name);
+        book.setAuthor(author);
+        book.setCategories(categories);
+        return book;
+    }
+
+}
+
+public class App4 {
+
+
+    public static void main(String[] args) {
+
+        try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Config.class)) {
+
+            CassandraTemplate template = ctx.getBean(CassandraTemplate.class);
+
+            BookType cleanCode = getBook(1L, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO"));
+            BookType cleanArchitecture = getBook(2L, "Clean Architecture", "Robert Cecil Martin", Sets.newHashSet("Good practice"));
+            BookType effectiveJava = getBook(3L, "Effective Java", "Joshua Bloch", Sets.newHashSet("Java", "Good practice"));
+            BookType nosqlDistilled = getBook(4L, "Nosql Distilled", "Martin Fowler", Sets.newHashSet("NoSQL", "Good practice"));
+
+
+            Category java = getCategory("Java", Sets.newHashSet(cleanCode, effectiveJava));
+            Category oo = getCategory("OO", Sets.newHashSet(cleanCode, effectiveJava, cleanArchitecture));
+            Category goodPractice = getCategory("Good practice", Sets.newHashSet(cleanCode, effectiveJava, cleanArchitecture, nosqlDistilled));
+            Category nosql = getCategory("NoSQL", Sets.newHashSet(nosqlDistilled));
+
+            template.insert(java);
+            template.insert(oo);
+            template.insert(goodPractice);
+            template.insert(nosql);
+
+            Category category = template.selectOneById("Java", Category.class);
+            System.out.println(category);
+            template.deleteById("Java", Category.class);
+
+        }
+
+    }
+
+    private static Category getCategory(String name, Set<BookType> books) {
+        Category category = new Category();
+        category.setName(name);
+        category.setBooks(books);
+        return category;
+    }
+
+    private static BookType getBook(long isbn, String name, String author, Set<String> categories) {
+        BookType book = new BookType();
+        book.setIsbn(isbn);
+        book.setName(name);
+        book.setAuthor(author);
+        book.setCategories(categories);
+        return book;
+    }
+
+}
+
+
+----
+
+Além da Classe template o Spring Data Cassandra conta com o conceito de repositórios dinâmicos do qual o desenvolvedor cria uma interface e o Spring se responsabilizará da respectiva implementação. A nova interface herdará de CassandraRepository que já possui um grande número de operações para o banco de dados e além disso é possível utilizar o conceito de `query by method` do qual ao utilizar as conversões de busca no nome do método e o Spring fará todo o trabalho pesado. Com esses repositórios é uma abstração valiosa que reduz o número de código gerando uma altíssima produtividade.
+
+
+[source,java]
+----
+@Repository
+public interface BookRepository extends CassandraRepository<Book, Long> {
+
+    @Query("select * from book")
+    List<Book> findAll();
+}
+
+
+public class App5 {
+
+    public static void main(String[] args) {
+
+        try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Config.class)) {
+
+            BookRepository repository = ctx.getBean(BookRepository.class);
+            Book cleanCode = getBook(1L, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO"));
+            Book cleanArchitecture = getBook(2L, "Clean Architecture", "Robert Cecil Martin", Sets.newHashSet("Good practice"));
+            Book effectiveJava = getBook(3L, "Effective Java", "Joshua Bloch", Sets.newHashSet("Java", "Good practice"));
+            Book nosql = getBook(4L, "Nosql Distilled", "Martin Fowler", Sets.newHashSet("NoSQL", "Good practice"));
+
+            repository.insert(cleanCode);
+            repository.insert(cleanArchitecture);
+            repository.insert(effectiveJava);
+            repository.insert(nosql);
+
+            List<Book> books = repository.findAll();
+            System.out.println(books);
+
+            Optional<Book> book = repository.findById(1L);
+            System.out.println(book);
+
+
+        }
+    }
+
+
+    private static Book getBook(long isbn, String name, String author, Set<String> categories) {
+        Book book = new Book();
+        book.setIsbn(isbn);
+        book.setName(name);
+        book.setAuthor(author);
+        book.setCategories(categories);
+        return book;
+    }
+}
+
+----
+
+TIP: A interface CassandraRepository é uma especialização do CrudRepository para operações do Cassandra. O CrudRepository é uma especialização do Repository. Essas interfaces fazem parte do Spring Data, para mais informações: https://docs.spring.io/spring-data/data-commons/docs/2.1.x/reference/html/
+
+
+TIP: O Spring Data Cassandra tem muitos mais recursos, por exemplo, operações assíncronas que facilitam e muito o dia a dia do desenvolvedor, para saber mais: https://docs.spring.io/spring-data/cassandra/docs/2.1.2.RELEASE/reference/html/
+
 
 O Spring framework é um projeto que trouxe uma grande inovação para o mundo Java, seus recursos e facilitações fazem com que ele seja o mais popular no mundo Java. Dentro da comunicação no banco de dados existe o Spring Data do qual é integrado com o Cassandra do qual existem diversas facilitações a ponto de não ser necessário aprender o Cassandra Query Language.

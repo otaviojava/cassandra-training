@@ -609,7 +609,7 @@ TIP: Como recomendação o tipo `List` tem algumas limitações e problemas de p
 
 ===== Map
 
-O mapa ele segue a linha de um dicionário de dados ou de um java.util.Map, caso você seja do mundo Java. Por exemplo, dado o exemplo anteior de leitores, nós gostaríamos de adicionar informações de contato. Esse contato pode ser de inúmeras formas, por exemplo, via e-mail, telefone, twitter, etc. Um bom candidato para isso seria o Map.
+O mapa ele segue a linha de um dicionário de dados ou de um java.util.Map, caso você seja do mundo Java. Por exemplo, dado o exemplo anterior de leitores, nós gostaríamos de adicionar informações de contato. Esse contato pode ser de inúmeras formas, por exemplo, via e-mail, telefone, twitter, etc. Um bom candidato para isso seria o Map.
 
 
 [source,sql]
