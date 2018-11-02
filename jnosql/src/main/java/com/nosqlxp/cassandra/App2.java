@@ -1,23 +1,22 @@
 package com.nosqlxp.cassandra;
 
 import com.google.common.collect.Sets;
+import org.jnosql.artemis.PreparedStatement;
 import org.jnosql.artemis.column.ColumnTemplate;
-import org.jnosql.diana.api.column.ColumnQuery;
-import org.jnosql.diana.api.column.query.ColumnQueryBuilder;
 
 import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.se.SeContainerInitializer;
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
  * Hello world!
- *
  */
-public class App 
-{
-    public static void main( String[] args )
-    {
+public class App2 {
+
+
+    public static void main(String[] args) {
+
         try(SeContainer container = SeContainerInitializer.newInstance().initialize()) {
             ColumnTemplate template =  container.select(ColumnTemplate.class).get();
 
@@ -31,10 +30,21 @@ public class App
             template.insert(effectiveJava);
             template.insert(nosql);
 
-            ColumnQuery query = ColumnQueryBuilder.select().from("book").build();
-            List<Book> books = template.select(query);
-            books.stream().forEach(System.out::println);
+
+            Optional<Book> book = template.find(Book.class, 1L);
+            System.out.println("Book found: " + book);
+
+            template.delete(Book.class, 1L);
+
+            System.out.println("Book found: " + template.find(Book.class, 1L));
+
+
+            PreparedStatement prepare = template.prepare("select * from Book where isbn = @isbn");
+            prepare.bind("isbn",2L);
+            Optional<Book> result = prepare.getSingleResult();
+            System.out.println("prepare: " + book);
         }
+
     }
 
     private static Book getBook(long isbn, String name, String author, Set<String> categories) {
@@ -45,4 +55,5 @@ public class App
         book.setCategories(categories);
         return book;
     }
+
 }
