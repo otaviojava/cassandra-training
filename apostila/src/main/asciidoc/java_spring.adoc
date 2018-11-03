@@ -397,5 +397,6 @@ TIP: A interface CassandraRepository é uma especialização do CrudRepository p
 
 TIP: O Spring Data Cassandra tem muitos mais recursos, por exemplo, operações assíncronas que facilitam e muito o dia a dia do desenvolvedor, para saber mais: https://docs.spring.io/spring-data/cassandra/docs/2.1.2.RELEASE/reference/html/
 
+IMPORTANT: O código com todo exemplo se encontra em: xxxxx para criar as estruturas do Cassandra, consulte o capítulo “Realizando integração com Java”
 
 O Spring framework é um projeto que trouxe uma grande inovação para o mundo Java, seus recursos e facilitações fazem com que ele seja o mais popular no mundo Java. Dentro da comunicação no banco de dados existe o Spring Data do qual é integrado com o Cassandra do qual existem diversas facilitações a ponto de não ser necessário aprender o Cassandra Query Language.

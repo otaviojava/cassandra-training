@@ -1,3 +1,5 @@
+
+
 == Considerações finais
 
 Pronto, após todos esses capítulos estamos chegando ao final do livro, o objetivo desse último capítulo da série é mostrar as últimas dicas e recomendações para que o leitor esteja livre para desbravar os mares do NoSQL com o barco chamado Cassandra e que o mesmo possuia as suas próprias experiências.

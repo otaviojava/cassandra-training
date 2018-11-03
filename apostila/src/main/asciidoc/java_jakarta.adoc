@@ -375,4 +375,7 @@ public class App5
 
 WARNING: O projeto ainda tem diversos recursos que não foram exibidos aqui, por exemplo, a realizar operações de maneira asíncrona. Para saber mais acesse: http://www.jnosql.org/
 
+IMPORTANT: O código com todo exemplo se encontra em: xxxxx para criar as estruturas do Cassandra, consulte o capítulo “Realizando integração com Java”
+
+
 Com uma nova casa e de forma ainda mais vibrante, nasce o projeto Eclipse JNoSQL sob nova direção do Jakarta EE com a Eclipse Foundation. O Eclipse JNoSQL tem como propósito facilitar a integração entre Java e NoSQL com a estratégia de dividir a camada de comunicação e mapeamento, atualmente, ele suporta mais de trinta bancos de dados. Muitas melhorias são esperadas pela comunidade, porém, o grande benefício da plataforma é que ela é totalmente orientada a comunidade, ou seja, o leitor pode sair da cadeira e ajudar tanto o Jakarta EE e o Eclipse JNoSQL agora mesmo.
