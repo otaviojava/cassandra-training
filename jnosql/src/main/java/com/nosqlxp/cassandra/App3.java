@@ -21,7 +21,7 @@ public class App3 {
     public static void main(String[] args) {
 
         try(SeContainer container = SeContainerInitializer.newInstance().initialize()) {
-            ColumnTemplate template =  container.select(CassandraTemplate.class).get();
+            CassandraTemplate template =  container.select(CassandraTemplate.class).get();
 
             BookType cleanCode = getBook(1L, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO"));
             BookType cleanArchitecture = getBook(2L, "Clean Architecture", "Robert Cecil Martin", Sets.newHashSet("Good practice"));

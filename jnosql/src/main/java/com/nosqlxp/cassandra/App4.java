@@ -2,7 +2,6 @@ package com.nosqlxp.cassandra;
 
 import com.google.common.collect.Sets;
 import org.jnosql.artemis.cassandra.column.CassandraTemplate;
-import org.jnosql.artemis.column.ColumnTemplate;
 
 import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.se.SeContainerInitializer;
@@ -17,7 +16,7 @@ public class App4 {
 
     public static void main(String[] args) {
         try(SeContainer container = SeContainerInitializer.newInstance().initialize()) {
-            ColumnTemplate template =  container.select(CassandraTemplate.class).get();
+            CassandraTemplate template =  container.select(CassandraTemplate.class).get();
 
             BookType cleanCode = getBook(1L, "Clean Code", "Robert Cecil Martin", Sets.newHashSet("Java", "OO"));
             BookType cleanArchitecture = getBook(2L, "Clean Architecture", "Robert Cecil Martin", Sets.newHashSet("Good practice"));
