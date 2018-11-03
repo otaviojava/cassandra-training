@@ -1,5 +1,0 @@
-
-== Realizando testes de integração com o Cassandra
-
-=== Utilizando o Cassandra Unit
-=== Utilizando docker para testar o código

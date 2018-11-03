@@ -1,0 +1,148 @@
+== Considerações finais
+
+Pronto, após todos esses capítulos estamos chegando ao final do livro, o objetivo desse último capítulo da série é mostrar as últimas dicas e recomendações para que o leitor esteja livre para desbravar os mares do NoSQL com o barco chamado Cassandra e que o mesmo possuia as suas próprias experiências.
+
+=== Motor de busca
+
+Como já foi discutido no capítulo de modelagem, no mundo ideal todas as queries deverão ser realizadas a partir da partition key, ou seja, além da desnormalização se deve evitar, a todo custo, utilizar os recursos como `ALLOW INDEXING` ou índice secundário, do contrário, o Cassandra terá impacto na leitura. Essa duplicação de dados terá a vantagem de performance no momento da leitura, mas tem o impacto do gerenciamento das informações, por exemplo, imagine no caso da libraria do qual a categoria estava tanto na família de coluna de livro quanto categoria, caso seja necessário atualizar, remover uma categoria num livro será necessário fazer a alteração em dois pontos, algo semelhante acontecerá se desejamos renomear um nome de uma categoria. Com a complexidade do negócio crescendo e o aumento da necessidade de realizar mais queries uma boa opção certamente é o uso de motores de busca.
+
+
+O motor de buscas contém diversas vantagens numa busca com relação do Cassandra, o primeiro deles, é o fato de conseguir realizar uma busca em outros campos que não seja o partition key. O segundo ponto é que a precisão e o tempo de resposta tende a ser maior no motor de busca que em relação ao Cassandra, principalmente, quando se utiliza um texto em grande quantidade. Por exemplo, imagine que dentro do livro agora se tenha um resumo do mesmo, porém, o texto está em HTML, dentro de um motor de busca a informação quando inserida é tratada para que quando a busca for realiza ela será otimizada, por exemplo, levando em consideração o processo do Elasticsearch teremos os seguintes passos:
+
+O a descrição a ser tratada será a seguinte:
+<h1>Conheça o <b>Clean Code<b>, o livro de boas práticas de programação</h1>.
+
+* *Character Filters*: é o primeiro contato da informação. Ele receberá um stream de caracteres e retornará um stream de caracteres. Nosso exemplo, o formato html será removido de forma que o texto ficará da seguinte forma: `Conheça o Clean Code, o livro de boas práticas de programação`.
+* *Tokenizer*: O processo de tokenização do qual dado uma stream de caracteres ele converte em um token, que geralmente resulta numa palavra. Por exemplo, a descrição do livro se transformaria em tokens como  [“Conheça”,”o”, “Clean”,”Code”,”o”,”livro”,”de”,”boas”,”práticas”,”de”,”programação”]
+* *Token Filter*: Nessa etapa, dada uma sequência de tokens, ele será responsável por remover (remover palavras comuns (stop worlds): “de”, “o”), adicionar (adicionar sinônimos: programação e software) ou modificar tokens (converter as palestras para minúsculo ou remover acentos das palavras).
+
+De modo que, quando for pesquisar, por exemplo, pela palavra “programação” dentro do motor de busca a informação já estará preprocessada como token em vez de varrer o texto em busca da informação em cada linha. Além do novo horizonte que motor de busca permite, por exemplo, é possível adicionar sinônimos, adicionar pesos em campos de buscas (caso a palavra esteja no título ele ter mais relevância de quanto estiver na descrição) e adicionar buscas com fuzzy muito interessante erros ortográficos que podem ser praticados pelo usuário, etc.
+
+No mundo do motor de busca existem algumas opções citaremos alguns:
+
+* Apache Lucene: Já houve uma apresentação desse projeto quando mencionamos o Hibernate Search foi mencionado um pouco sobre esse projeto. Ele é um projeto open source que se encontra dentro da Apache foundation, ele é uma API de busca e de indexação de documentos. Dentre os grandes cases de experiência do projeto se encontra o Wikipedia.
+* Apache Sorl: o Apache Sorl, ou simplesmente Sorl, é também um projeto open source mantido da Apache Foudation, dentre as principais features se pode citar pesquisa de texto, indexação em tempo de execução e a possiblidade de executar em Clusters. Uma curiosidade é que o Apache Sorl é desenvolvido em cima do Apache Lucene.
+* Elasticsearch: o Elasticsearch, assim como o Apache Sorl, é um motor de busca baseado no Apache Lucene, porém, não é da Apache Foundation (Apesar de a licensa ser Apache 2.0). Também tem o recurso de trabalhar o motor de busca como cluster e atualmente é considerado o motor de busca mais popular e utilizado do mundo.
+
+Existem alguns projetos, inclusive, que visa justamente a integração entre o motor de busca com o Cassandra são os casos do Solandra (integração do Cassandra com Sorl) e o Elassandra. Atualmente existem diversos cases de integração desses dois mundos, de modo que, é interessante que o leitor se preocupe.
+
+
+=== Validando os dados com Bean Validation
+
+Numa aplicação é muito comum que alguns campos tenham uma validação específica e caso ela não esteja consistente é muito melhor que informação não seja salva e retorne um erro ao usuário que deseja salvar tal informação, é o caso dos campos de e-mail, o cassandra não possui nenhum recurso de validação. Para preencher essa lacuna uma opção é uso do Bean Validation que uma especificação Java do qual é possível colocar constraints em objetos Java a partir de anotações.
+
+O Bean Validation possui um vasto número de anotações nativa que permitem um alto grau de validações, por exemplo, tamanho mínimo ou tamanho máximo de um text, validação de e-mail, campo obrigatório, dentre outros.
+
+
+[source,java]
+----
+public class User {
+@NotNull
+@Email
+private String email;
+}
+----
+
+Além de ter várias opções de validação, também é possível criar um novo, de movo que o Bean Validation é uma grande opção caso os dados precisem ter algum tipo de validação para a consistência dos dados.
+
+=== Realizando testes de integração com o Cassandra
+
+
+No mundo da engenharia de softwares os testes é a peça fundamental para a construção de qualquer programa. É a partir deles que é possível garantir que o código atual se encontra estável, se teste de maneira rápida e sem a interferência humana além de ter maior segurança para refatorar e adicionar novos recursos dentro do sistema. Os testes de integração é um dos tipos de testes de um sistema do qual se verifica um grupo de componente, por exemplo, a comunicação entre o código Java e o Cassandra. Nesse tópico citarei dois bons exemplos para realizar os testes.
+
+O primeiro deles é o Cassandra unit, ele se comporta de maneira similar ao DBUnit, porém, em vez de banco relacional esse utiliza o Cassandra. O primeiro deles é o Cassandra unit, ele se comporta de maneira similar ao DBUnit, porém, em vez de banco relacional esse utiliza o Cassandra. Ou seja, ele levantará um Cassandra embarcado pronto para uso nos seus testes.
+
+
+* O próximo passo é adiciona tanto a dependência de testes quanto o framework desejado tanto para a comunicação quanto para o teste. No nosso pequeno exemplo, será utilizado Junit 5 como driver da DataStax.
+
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.cassandraunit</groupId>
+    <artifactId>cassandra-unit</artifactId>
+    <version>3.3.0.2</version>
+    <scope>test</scope>
+</dependency>
+----
+
+É possível perceber que nesse pequeno teste, só foi necessário adicionar um método que levanta uma instância embarcada do Cassndra e outra que limpa.
+
+[source,java]
+----
+public class SampleCassandraTest {
+
+
+    @BeforeAll
+    public static void before() throws InterruptedException, IOException, TTransportException {
+        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+    }
+
+    @AfterAll
+    public static void end() {
+        EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+    }
+
+    @Test
+    public void test(){
+        Cluster.Builder builder = Cluster.builder();
+        builder.addContactPoint("localhost").withPort(9142);
+        Cluster cluster = builder.build();
+        Session session = cluster.newSession();
+        ResultSet resultSet = session.execute("SELECT * FROM system_schema.keyspaces;");
+        Assertions.assertNotNull(resultSet);
+        cluster.close();
+    }
+
+}
+
+----
+
+
+* Testcontainers é uma biblioteca Java que permite a integração do Junit com qualquer imagen docker. Uma vez que com o Cassandra é possível executá-lo dentro duma imagem docker é possível levantar um container, executar o necessário e em seguida o destruir para cada teste. A dependência é algo realmente simples de ser adicionado. Após isso, a diferença com o teste de integração anterior está na dependência e no código de infraestrutura para levantar o Cassandra, deva vez, via contêiner.
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>testcontainers</artifactId>
+    <version>1.9.1</version>
+    <scope>test</scope>
+</dependency>
+----
+
+
+[source,java]
+----
+public class SampleCassandraContainerTest {
+
+
+    @Test
+    public void test(){
+
+        GenericContainer cassandra =
+                new GenericContainer("cassandra")
+                        .withExposedPorts(9042)
+                        .waitingFor(Wait.defaultWaitStrategy());
+
+        cassandra.start();
+        Cluster.Builder builder = Cluster.builder();
+        builder.addContactPoint(cassandra.getIpAddress()).withPort(cassandra.getFirstMappedPort());
+        Cluster cluster = builder.build();
+        Session session = cluster.newSession();
+        ResultSet resultSet = session.execute("SELECT * FROM system_schema.keyspaces;");
+        Assertions.assertNotNull(resultSet);
+        cluster.close();
+    }
+}
+----
+
+=== Experimentando outros sabores de Cassandra
+
+No mundo de família de Colunas o Cassandra é o banco de dados mais famoso e com isso nasceram outros projetos com o objetivo justamente de competir e pegar um pouco da torta de NoSQL família de coluna.
+
+* O DataStax DSE: é uma versão corporativa, fechada e paga fornecida pela DataStax. Ele suporta tudo aquilo que o Cassandra faz atualmente e adiciona novos recursos como analitics e motor de busca já integrado. Um outro ponto interessante é que o DSE é um banco de dados Multi-model, em outras palavras, é um banco de dados NoSQL que suporta mais de um tipod e banco NoSQL (chave-valor, família de coluna e grafos).
+* ScillaDB: É um banco de dados cujo o seu foco é a possibilidade de manter total compatibilidade com o Cassandra, porém, com uma performance extremamente superior. Em teoria, é possível pegar uma aplicação em Cassandra e mudar para esse banco de dados sem impacto algum. Ele também tem imagens oficiais dentro do dockerhub, uma vez que o leitor entrou no mundo Cassandra vale a tentativa.
+
+
+Com isso foram apresentados os conselhos finais e últimas dicas para prosseguir com o Cassandra. Recursos como motor de busca, validação de dados com bean validation e ferramentas para testes de integração são recursos valiosos que é recomendável que o leitor vá muito mais fundo. O objetivo desse capítulo foi de apenas despertar a curiosidade para continuar evoluindo o Cassandra, dessa vez, integrando com outras ferramentas. Espero que esse livro tenha contribuído para mostrar como o Cassandra é simples de uso e está a menos de um passo de distância para integrá-lo com aplicações Java.
