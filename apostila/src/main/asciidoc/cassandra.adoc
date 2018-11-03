@@ -68,7 +68,7 @@ O particionador determina como os dados serão distribuídos através dos nós d
 * *RandomPartitioner*: gera o hash a partir do MD5.
 * *ByteOrderedPartitioner*: mantém os dados ordenados de maneira léxica.
 
-. A sequência de três linhas e cada linha tem a sua respectiva chave. Com a chave, a partir do partitioner, será criado uma hash do qual será utilizado para definir o nó responsável por reter a requisição.
+.A sequência de três linhas e cada linha tem a sua respectiva chave. Com a chave, a partir do partitioner, será criado uma hash do qual será utilizado para definir o nó responsável por reter a requisição.
 image::partitioner.png[Partitioner structure]
 
 === Consistência vs durabilidade
