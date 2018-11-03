@@ -203,6 +203,7 @@ cqlsh> SELECT * FROM library.book;
 ----
 
 TIP: É possível utilizar também `COLUMNFAMILY` ao invés de `TABLE`
+
 ==== Chave primária
 
 Dentro da família de coluna a chave primária, primary key, é o campo único e todas as famílias de colunas *devem* defini-la. É a partir desse campo que o os dados serão recuperados, por issso, existe uma preocupação inicial com esse campo. A chave primária pode ser constituída por mais de um campo, porém, ela terá um conceito diferente do banco relacional. Ele será dividida em duas partes:
