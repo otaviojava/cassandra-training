@@ -2,18 +2,40 @@
 == Referências
 
 
-http://cassandra.apache.org/
+Site de Cassandra:: http://cassandra.apache.org/
 
-http://cassandra.apache.org/doc/latest/
+Documentação do Cassandra:: http://cassandra.apache.org/doc/latest/
 
-https://pantheon.io/blog/cassandra-scale-problem-secondary-indexes
+Cassandra at Scale: The Problem with Secondary Indexes:: https://pantheon.io/blog/cassandra-scale-problem-secondary-indexes
 
-https://docs.datastax.com/en/cassandra/3.0/cassandra/dml/dmlIndexInternals.html
+How are indexes stored and updated?:: https://docs.datastax.com/en/cassandra/3.0/cassandra/dml/dmlIndexInternals.html
 
-https://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling
+Basic Rules of Cassandra Data Modeling:: https://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling
 
-http://www.elemarjr.com/pt/2018/02/3-caracteristicas-de-uma-boa-modelagem-para-bancos-nosql-de-documentos/
+3 CARACTERÍSTICAS DE UMA BOA MODELAGEM PARA BANCOS NOSQL DE DOCUMENTOS:: http://www.elemarjr.com/pt/2018/02/3-caracteristicas-de-uma-boa-modelagem-para-bancos-nosql-de-documentos/
 
-https://www.youtube.com/watch?v=FY0BiZaJwL4
+Oren Eini - Modeling in a Non Relational World:: https://www.youtube.com/watch?v=FY0BiZaJwL4
 
-https://spring.io/
+Site de Spring:: https://spring.io/
+
+Graph Databases for Beginners: ACID vs. BASE Explained:: https://neo4j.com/blog/acid-vs-base-consistency-models-explained/
+
+Base: An Acid Alternative:: https://queue.acm.org/detail.cfm?id=1394128
+
+Understanding the CAP Theorem:: https://dzone.com/articles/understanding-the-cap-theorem
+
+Wikipedia CAP theorem:: https://en.wikipedia.org/wiki/CAP_theorem
+
+List of NoSQL databases:: http://nosql-database.org/
+
+ORM Is an Offensive Anti-Pattern:: https://www.yegor256.com/2014/12/01/orm-offensive-anti-pattern.html
+
+OrmHate:: https://martinfowler.com/bliki/OrmHate.html
+
+NoSQL Distilled:: A Brief Guide to the Emerging World of Polyglot Persistence
+
+Documentação de referência do Spring Data Commons:: https://docs.spring.io/spring-data/data-commons/docs/2.1.x/reference/html/
+
+Documentação de referência do Spring Data Cassandra:: https://docs.spring.io/spring-data/cassandra/docs/2.1.2.RELEASE/reference/html/
+
+Documentação de referência:: https://docs.jboss.org/weld/reference/2.1.0.Final/en-US/html/
