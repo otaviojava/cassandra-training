@@ -333,5 +333,37 @@ A outra maneira é o uso de `ALLOW FILTERING`, ele permite a busca por qualquer 
 
 TIP: O Maior objetivo dessa parte é que você deve evitar ao máximo o uso de índices no Cassandra.
 
+=== Atenção com a configuração de fator de réplica e nível de consistência
+
+Anteriormente, o livro cobriu o sobre boas práticas de modelagem dentro do Cassandra e foram dadas dicas de como utilizar ao máximo chaves primárias e evitar índices secundários dentro do banco de dados. A modelagem é muito importante, porém, não é o único ponto dentro do Cassandra o segundo ponto é a definição do número de clusters e o fator de réplica.
+
+O fator de réplica indica o número nós que são necessários para a informação da família de coluna, que estarão dentro do keyspace, precisam para ter. Por exemplo:
+
+[source,sql]
+----
+CREATE KEYSPACE library  WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
+
+CREATE TABLE IF NOT EXISTS library.book (
+    title text,
+    name name,
+    PRIMARY KEY (title)
+);
+
+CREATE TABLE IF NOT EXISTS library.author (
+    id text,
+    name name,
+    PRIMARY KEY (id)
+);
+
+----
+
+Os dados dentro dessas famílias de colunas precisam estar em três nós para definir como o sucesso, porém, como já foi mencionado a forma como ele será feita essa replica, além da estratégica, é o nível de consistência, por exemplo, dentro da família de coluna ao escrever com o nível de consistência `ALL` ele precisa escrever nos três nós para ter sucesso, de modo que é importante o balanço entre um alto e baixo do nível de consistência (O equilibro entre consistência e disponibilidade).
+
+Além do fator de réplica e a operação existe o número de nós dentro do Cassandra, por exemplo, dentro das nossas famílias de colunas exemplo não faz sentido ter o fator de réplica de três se tivermos apenas um único nó. O balanço é realmente algo importante entre esses três pontos para garantir leitura e escrita com consistência ou com eventual persistência, número de servidores que podem morrer sem impactar a aplicação além do número de nós que podem morrer sem impactar a perde de informação. Um ponto importante é que o fator de réplica do Cassandra que garanti algo semelhante ao Backup que existe no banco de dados relacional, no nosso caso, se um servidor morrer existirão outros dois com a mesma informação. Para facilitar esse calculo existe que o ajuda, para isso, basta informar o número de cluster, fator de cluster além do nível de consistência da leitura e escrita: https://www.ecyrd.com/cassandracalculator/
+
+
+
 
 Com isso foram apresentados os conceitos de modelagem dentro de um banco de dados Cassandra demonstrando como ele é diferente de uma base de dados relacional. O seu core conceito é justamente escrever ao máximo, uma vez que tende a ser uma operação barata, para justamente diminuir o número de operações na leitura no mundo ideal é possível criar queries e consultas sem o uso de índices seja ele como secundário ou com o recurso de `ALLOW FILTERING`, porém, existirá um trabalho gigantesco para gerenciar a duplicação de dados que existirá.
+
+
