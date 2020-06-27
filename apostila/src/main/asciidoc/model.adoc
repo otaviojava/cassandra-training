@@ -1,6 +1,4 @@
-
 == Modelando sua Aplicação com Cassandra
-
 
 Dentro da ciência de dados a modelagem certamente é um dos pontos mais enigmáticos e mais desafiadores. Um erro nesse ponto, significará impacto de performance tanto na leitura quanto na escrita de informações no banco de dados. No mundo relacional o desenvolver já está acostumado com o conceito de normalização que é um conjunto de regras que visa, principalmente, a organização dentro do banco de dados relacional para evitar a redundância de dados. O ponto é ser discutido é que quando surgiu os bancos relacionais evitar a redundância era um grande desafio uma vez que o preço de armazenamento era algo realmente muito caro. Por exemplo, em 1980 um servidor que armazenava vinte e seis megabytes tinha um custo de quase cinco mil dólares, atualmente, um terabyte custa menos de cinquenta dólares.
 
