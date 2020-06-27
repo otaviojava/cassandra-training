@@ -42,7 +42,6 @@ Dentro do Keyspace é possível configurar o fator de replica, o número de máq
 
 A família de coluna é um container de linhas, cada linha é composta por uma ou mais colunas. Cada coluna é composta por nome, o valor e o timestamp, esse timestamp é o que será utilizado para verificar quais informações são os mais atualizados.
 
-
 As partes da coluna são:
 
 * *Nome*: que representa o nome da coluna
@@ -77,7 +76,6 @@ Para cada requisição para um cluster Cassandra é possível configurar o níve
 
 .Equilíbrio entre consistência e disponibilidade dentro de uma requisição do Cassandra
 image::consistency_vs_disponibility.png[Consistency vs Disponibility]
-
 
 ==== Write Operation
 
