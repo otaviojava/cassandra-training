@@ -10,7 +10,6 @@ O Spring frameworks é um projeto open source cujo seu objetivo é facilitar o d
 * Spring Data
 * E muito mais
 
-
 Nesse capítulo, será apresentado um pouco do mundo Spring integrado com o uso do Cassandra.
 
 === Facilitando o acesso aos dados com Spring Data
@@ -22,7 +21,6 @@ Uma grande abstração object-mapping
 O query by method que se baseia na query dinâmica realizada na interface
 Fácil integração com outros projetos dentro do Spring dentre eles o Spring MVC, JavaConfig
 Suporte por auditoria
-
 
 Dentro do Spring Data existe o Spring Data Cassandra que suporte tem suporte a criação de repositórios, suporte a operações síncronas e assíncronas, recursos como query builders e uma altíssima abstração do Cassandra a ponto que se torne dispensável aprender o Cassandra Query Language. Para adentrar no maravilhoso mundo do Spring, o primeiro passo é adicionar a dependência no projeto.
 
@@ -37,15 +35,12 @@ Dentro do Spring Data existe o Spring Data Cassandra que suporte tem suporte a c
 
 Definido as dependências, o próximo passo é o código de infraestrutura que ativa o Spring e a configuração de conexão com o Cassandra. A classe Config tem duas anotações: uma para procurar os componentes dentro de um específico pacote e o outro para fazer algo similar aos repositórios Cassandra. Já a classe CassandraConfig dispõe as configurações para a conexão com o Cassandra, por exemplo, o keyspace a ser utilizado, configurações do cluster e o Mapper Cassandra Spring.
 
-
-
 [source,java]
 ----
 @ComponentScan("com.nosqlxp.cassandra")
 @EnableCassandraRepositories("com.nosqlxp.cassandra")
 public class Config {
 }
-
 
 @Configuration
 public class CassandraConfig extends AbstractCassandraConfiguration {
@@ -76,8 +71,6 @@ public class CassandraConfig extends AbstractCassandraConfiguration {
 ----
 
 TIP: Nesse livro não falaremos detalhes do recurso do Spring para obter mais informações sobre o framework um bom livro é o Vire o Jogo com Spring da Casa do código: https://www.casadocodigo.com.br/products/livro-spring-framework
-
-
 
 Código de configuração ou infraestrutura criado, trabalharemos no primeiro exemplo que é a leitura e a escrita do livro. A modelagem acontece de maneira simples e intuitiva graças as anotações do Spring Data Cassandra já que `Table` é mapear a entidade, `PrimaryKey` para identificar a chave primária e `Column` os campos que serão persistidos.
 
