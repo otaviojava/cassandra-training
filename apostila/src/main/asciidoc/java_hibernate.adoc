@@ -7,7 +7,6 @@ No mundo relacional exitem diversos frameworks ORM do qual facilita a integraç�
 
 Com o objetivo de facilitar a comunicação a curva de aprendizagem dos desenvolvedores para começar a aprender os bancos não relacionais, nasceu o Hibernate OGM. Sua abordagem é bastante simples, utilizar uma API relacional, que muitos desenvolvedores Java já conhecem para o mundo do banco não relacional, dentre os bancos que esse projeto tem suporte podemos citar:
 
-
 * Cassandra
 * CouchDB
 * EhCache
@@ -148,11 +147,9 @@ public class App {
 }
 ----
 
-
 Como esperado, toda operação acontece pelo EntityManager, um ponto preocupante é que a informação só irá definitivamente para o banco de dados quando se realiza o commit da transação. Como? O ponto é que mesmo o Cassandra não tendo transação de maneira nativa no banco de dados o Hibernate acaba simulando esse comportamento que pode ser perigoso, principalmente, em ambientes distribuidos.
 
 O recurso de JPQL, Java Persistence Query Language, é uma query de consulta criada para o JPA, também está disponível dentro do Hibernate OGM, tudo isso graças ao recurso do Hibernate Search que permite a busca por campos além da partition key. Existe a contrapartida, esse campo não poderá será analisado dentro da busca, ou seja, dentro da anotação `Field` o atributo `analizy` precisará ser defindo como `Analyze.NO` (Verifique como o campo `name` foi anotado dentro da classe).
-
 
 [source,java]
 ----
