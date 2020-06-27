@@ -56,7 +56,6 @@ Para o próximo passo, iniciaremos a integração com uma framework Java, o noss
 
 O Cassandra é um projeto open source e pertence a Apache fundation, porém, existem diversas empresas que oferecem suporte e serviços ao redor do projeto. A DataStax é uma delas, ela foi fundada pelo Jonathan Ellis umas das pessoas que fez diversas contribuições para o projeto e hoje é Apache Cassandra Chair. A Datastax oferece diversos produtos ao redor do projeto, por exemplo, ferramentas de desenvolvimento, auxiliar o gerenciamento de cluster, drivers de comunicação em diversas linguagens, além de uma solução baseada em Cassandra.
 
-
 === Esqueleto dos projetos exemplos
 
 Como já foi mencionado, os exemplos serão baseados em cima do Java SE, assim, uma boa maneira de se criar o projeto além de utilizar a IDE é utilizar o maven archetype como quick-start. Para criar o projeto com esse esqueleto basta executar, por exemplo, o seguinte comando:
@@ -169,9 +168,7 @@ public class App {
 
 Na primeira classe demo de interação com o Cassandra, com o Driver, quem já está familiarizado com o Cassandra Query Language se sentirá bastante tranquilo para entender o código. Todas as operações com o CQL são facilitadas a partir da classe `QueryBuilder`, essa classe é uma utilitária que contém diversos métodos que facilitam a vida do desenvolvedor para criar CQL para uma aplicação.
 
-
 Para o próximo passo, vamos buscar e remover informação dentro da família de coluna `Book` no campo ISBN, que é o partition key. Para facilitar um pouco o código, criaremos um Consumer para logar o resultado (não será nada sofisticado, apenas o bom e velho `System.out.println`).
-
 
 .Realizando a busca dos campos pelo ID dentro da família da coluna `Book`
 [source,java]
@@ -411,8 +408,6 @@ Esse mapper também é mantido pela DataStax, ele é uma camada acima da camada 
     <version>3.6.0</version>
 </dependency>
 ----
-
-
 
 Para o mesmo exemplo que realiza a manipulação da família de coluna `Book` o primeiro passo é o mapeamento, que nada mais é uma  entidade cujo seus atributos são anotados. Ao ver o código é possível perceber que as anotações são bem similares para quem veio do mundo do JPA, porém, caso o não seja, não sentirá dificuldade uma vez que as anotações são intuitivas. Por exemplo:
 
@@ -749,6 +744,5 @@ public class App6 {
 
 }
 ----
-
 
 Nesse capítulo se obteve o marco da integração entre o Cassandra e um aplicativo Java. Também foi possível ver a diferença de um framework que realiza a comunicação de baixo nível, semelhante ao JDBC, e um mapper do qual ao mesmo tempo que facilita o desenvolvimento aumenta a responsabilidade para que o desenvolvedor não cometa erros por esquecer que existe uma quebra de paradigma entre a aplicação e o banco de dados.
