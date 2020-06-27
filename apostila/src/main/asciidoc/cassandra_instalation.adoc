@@ -3,7 +3,6 @@
 
 No capítulos anteriores, foram abordados os conceitos dos bancos de dados não relacionais, suas comparações com o relacional além de dissecar o funcionamento interno do Cassandra. Nesse capítulo, teremos uma visão mais prática do Cassandra, mostraremos com funciona o processo de instalação, configuração, além da abordar a instalação utilizando os novos conceitos que estão quebrando paradigmas na computação em nuvem, isso mesmo o container com Docker.
 
-
 === Realizando download do Cassandra
 
 Antes de iniciar a instalação é importante falar dos prerequisitos do Cassandra.
@@ -15,7 +14,6 @@ Antes de iniciar a instalação é importante falar dos prerequisitos do Cassand
  * Realize o download do Cassandra no Web site do projeto: http://cassandra.apache.org/download/
  * Depois do download, descompactar o arquivo, por exemplo. `tar -xvf apache-cassandra-3.6-bin.tar.gz`
  * Com os arquivos descompactados, o próximo passo é entrar na pasta `bin` e iniciar o Apache Cassandra. Para isso, execute `cassandra -f`
-
 
 Para acessar o client basta executar o `./cqlsh` dentro da pasta `bin`
 
@@ -29,11 +27,9 @@ cqlsh> SHOW VERSION
 cqlsh>
 ----
 
-
 ==== Configurações dentro do arquivo yaml
 
 Para executar um único nó a configuração não é necessário, porém, para os clusters as configurações serão necessárias. Dentro do Cassandra as configurações se encontram dentro da pasta `conf`. Muitas de tais configurações é feito via um arquivo yaml dentro do cassandra.yaml. De uma maneira as configurações desse arquivo são:
-
 
 * *cluster_name*: o nome do cluster.
 * *seeds*: O Ips dos nós sementes separados por vírgulas.
@@ -43,7 +39,6 @@ Para executar um único nó a configuração não é necessário, porém, para o
 
 
 === Simplificando a instalação com containers
-
 
 image::docker.png[Docker]
 
@@ -201,6 +196,5 @@ services:
 networks:
     cassandranet:
 ----
-
 
 A instalação e a configuração do cassandra seja em cluster utilizando ou não contanier como docker se mostrou algo realmente muito simples se compararmos uma configuração de cluster semelhante dentro de um banco de dados relacional. Um ponto importante é que a popularidade do docker não é em vão, a sua facilidade de execução e de configuração para um nó ou clusters é realmente muito interessante principalmente para desenvolvedores, talvez, esse seja o motivo que atualmente o docker é considerado a maior ferramenta quando o assunto é DevOps. Nas próximas cenas será discutido como realizar a comunicação com o Cassandra, algo que será extremamente simples caso o leitor já esteja acostumado com os bancos relacionais.
