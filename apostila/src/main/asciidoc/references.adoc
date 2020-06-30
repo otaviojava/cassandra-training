@@ -1,6 +1,4 @@
-
 == Referências
-
 
 Site de Cassandra:: http://cassandra.apache.org/
 
