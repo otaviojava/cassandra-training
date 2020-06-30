@@ -28,8 +28,6 @@ Um bom primeiro passo para começar a modelagem é saber quais queries a aplica�
 
 ==== Casos Um para Um
 
-
-
 Imagine o seguinte cenário:
 Cada livro (ISBN, nome e ano) tem o seu autor (nome e país).
 
@@ -359,9 +357,4 @@ Os dados dentro dessas famílias de colunas precisam estar em três nós para de
 
 Além do fator de réplica e a operação existe o número de nós dentro do Cassandra, por exemplo, dentro das nossas famílias de colunas exemplo não faz sentido ter o fator de réplica de três se tivermos apenas um único nó. O balanço é realmente algo importante entre esses três pontos para garantir leitura e escrita com consistência ou com eventual persistência, número de servidores que podem morrer sem impactar a aplicação além do número de nós que podem morrer sem impactar a perde de informação. Um ponto importante é que o fator de réplica do Cassandra que garanti algo semelhante ao Backup que existe no banco de dados relacional, no nosso caso, se um servidor morrer existirão outros dois com a mesma informação. Para facilitar esse calculo existe que o ajuda, para isso, basta informar o número de cluster, fator de cluster além do nível de consistência da leitura e escrita: https://www.ecyrd.com/cassandracalculator/
 
-
-
-
 Com isso foram apresentados os conceitos de modelagem dentro de um banco de dados Cassandra demonstrando como ele é diferente de uma base de dados relacional. O seu core conceito é justamente escrever ao máximo, uma vez que tende a ser uma operação barata, para justamente diminuir o número de operações na leitura no mundo ideal é possível criar queries e consultas sem o uso de índices seja ele como secundário ou com o recurso de `ALLOW FILTERING`, porém, existirá um trabalho gigantesco para gerenciar a duplicação de dados que existirá.
-
-
