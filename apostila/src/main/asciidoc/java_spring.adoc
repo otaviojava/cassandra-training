@@ -371,7 +371,6 @@ public class App5 {
         }
     }
 
-
     private static Book getBook(long isbn, String name, String author, Set<String> categories) {
         Book book = new Book();
         book.setIsbn(isbn);
